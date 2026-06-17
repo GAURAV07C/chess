@@ -15,7 +15,9 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@repo/store": ["../../packages/store/src"],
+      "@repo/store/*": ["../../packages/store/src/*"]
     },
 
     /* Linting */

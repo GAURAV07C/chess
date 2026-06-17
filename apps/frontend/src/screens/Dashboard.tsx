@@ -16,6 +16,7 @@ import {
   Crown,
   Gamepad2,
   ChevronRight,
+  UserRound,
 } from 'lucide-react';
 import { useUser } from '@repo/store/useUser';
 import { useEffect, useState, useMemo } from 'react';
@@ -146,8 +147,15 @@ export const Dashboard = () => {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-2"
         >
-          <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
             {greeting}, <span className="text-amber-400">{user?.name || 'Player'}</span>
+            <button
+              onClick={() => navigate('/profile')}
+              className="ml-2 p-2 rounded-full bg-slate-900/80 border border-slate-800 hover:border-amber-500/50 text-slate-400 hover:text-amber-400 transition-colors"
+              title="Profile"
+            >
+              <UserRound className="w-5 h-5" />
+            </button>
           </h1>
           <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl">
             Ready for your next battle? Choose a mode and start playing.
@@ -185,7 +193,9 @@ export const Dashboard = () => {
                     <p className="text-slate-400 text-xs md:text-sm mt-1">{mode.desc}</p>
                   </div>
                 </div>
-                <div className={`absolute bottom-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-500 ${mode.glow}`} />
+                <div
+                  className={`absolute bottom-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-500 ${mode.glow}`}
+                />
               </motion.button>
             );
           })}
@@ -302,9 +312,7 @@ export const Dashboard = () => {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`text-sm font-bold ${game.won ? 'text-amber-400' : 'text-rose-400'}`}
-                  >
+                  <span className={`text-sm font-bold ${game.won ? 'text-amber-400' : 'text-rose-400'}`}>
                     {game.result}
                   </span>
                 </motion.div>

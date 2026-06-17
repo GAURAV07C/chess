@@ -1,14 +1,14 @@
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { userAtom } from '@repo/store/userAtom';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL ?? 'http://localhost:3000';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [, setUser] = useRecoilState(userAtom);
+  const setUser = useSetRecoilState(userAtom);
   const [name, setName] = useState('');
   const [isGuest, setIsGuest] = useState(false);
 

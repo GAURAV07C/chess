@@ -24,35 +24,45 @@ interface UserDetails {
 
 // this route is to be hit when the user wants to login as a guest
 router.post('/guest', async (req: Request, res: Response) => {
-  const bodyData = req.body;
-  let guestUUID = 'guest-' + uuidv4();
+  try {
+    const bodyData = req.body;
+    let guestUUID = 'guest-' + uuidv4();
 
-  const user = await db.user.create({
-    data: {
-      username: guestUUID,
-      email: guestUUID + '@cheakmate.com',
-      name: bodyData.name || guestUUID,
-      provider: 'GUEST',
-    },
-  });
+    const user = await db.user.create({
+      data: {
+        username: guestUUID,
+        email: guestUUID + '@cheakmate.com',
+        name: bodyData.name || guestUUID,
+        provider: 'GUEST',
+      },
+    });
 
-  const token = jwt.sign({ userId: user.id, name: user.name, isGuest: true }, JWT_SECRET);
-  const UserDetails: UserDetails = {
-    id: user.id,
-    name: user.name!,
-    token: token,
-    isGuest: true,
-  };
-  res.cookie('guest', token, { maxAge: COOKIE_MAX_AGE });
-  res.json(UserDetails);
+    const token = jwt.sign({ userId: user.id, name: user.name, isGuest: true }, JWT_SECRET);
+    const UserDetails: UserDetails = {
+      id: user.id,
+      name: user.name!,
+      token: token,
+      isGuest: true,
+    };
+
+    res.cookie('guest', token, {
+      maxAge: COOKIE_MAX_AGE,
+      httpOnly: false,
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.json(UserDetails);
+  } catch (err) {
+    console.error('Guest login error:', err);
+    res.status(500).json({ message: 'Failed to create guest account' });
+  }
 });
 
 router.get('/refresh', async (req: Request, res: Response) => {
+  console.log('[refresh] cookies:', req.cookies);
+  console.log('[refresh] req.user:', req.user);
   if (req.user) {
     const user = req.user as UserDetails;
-
-    // Token is issued so it can be shared b/w HTTP and ws server
-    // Todo: Make this temporary and add refresh logic here
 
     const userDb = await db.user.findFirst({
       where: {
@@ -67,6 +77,7 @@ router.get('/refresh', async (req: Request, res: Response) => {
       name: userDb?.name,
     });
   } else if (req.cookies && req.cookies.guest) {
+    console.log('[refresh] using guest cookie');
     const decoded = jwt.verify(req.cookies.guest, JWT_SECRET) as userJwtClaims;
     const token = jwt.sign({ userId: decoded.userId, name: decoded.name, isGuest: true }, JWT_SECRET);
     let User: UserDetails = {
@@ -78,6 +89,7 @@ router.get('/refresh', async (req: Request, res: Response) => {
     res.cookie('guest', token, { maxAge: COOKIE_MAX_AGE });
     res.json(User);
   } else {
+    console.log('[refresh] no auth found, returning 401');
     res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 });
@@ -88,15 +100,13 @@ router.get('/login/failed', (req: Request, res: Response) => {
 
 router.get('/logout', (req: Request, res: Response) => {
   res.clearCookie('guest');
+  res.clearCookie('jwt');
   req.logout((err) => {
     if (err) {
       console.error('Error logging out:', err);
-      res.status(500).json({ error: 'Failed to log out' });
-    } else {
-      res.clearCookie('jwt');
-      res.redirect('http://localhost:5173/');
     }
   });
+  res.status(200).json({ message: 'Logged out successfully' });
 });
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
