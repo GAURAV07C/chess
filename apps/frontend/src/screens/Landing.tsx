@@ -6,7 +6,7 @@ import { LandingPlayCard } from '@/components/LandingPlayCard';
 import { LandingChessboard } from '@/components/LandingChessboard';
 import { LandingFooter } from '@/components/LandingFooter';
 import {
-  Trophy, Swords, Sparkles, Github, Play,
+   Swords, Sparkles, Github, Play,
   Layers, Users, Shield, Cpu, Flame, Zap
 } from 'lucide-react';
 
@@ -86,7 +86,7 @@ export const Landing: React.FC = () => {
               <span className="hidden sm:inline">Issues</span>
             </a>
             <a
-              href="#play"
+              href="/login"
               className="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 tracking-wide cursor-pointer"
             >
               Get Started
@@ -151,7 +151,7 @@ export const Landing: React.FC = () => {
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                   <Play className="w-4 h-4 fill-slate-950" />
-                  <span>Get Started & Play Now</span>
+                  <span>Get Started & Login</span>
                 </a>
                 <a
                   href="#themes"
