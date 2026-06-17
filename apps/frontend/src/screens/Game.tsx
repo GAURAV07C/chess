@@ -246,7 +246,7 @@ export const Game = () => {
   if (!socket) return <div>Connecting...</div>;
 
   return (
-    <div className="">
+    <div className="min-h-screen bg-[#030611] text-white">
       {result && (
         <GameEndModal
           blackPlayer={gameMetadata?.blackPlayer}
@@ -255,14 +255,16 @@ export const Game = () => {
         ></GameEndModal>
       )}
       {started && (
-        <div className="justify-center flex pt-4 text-white">
-          {(user.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
+        <div className="justify-center flex pt-4">
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 w-fit">
+            {(user.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
+          </div>
         </div>
       )}
       <div className="justify-center flex">
         <div className="pt-2 w-full">
-          <div className="flex gap-8 w-full">
-            <div className="text-white">
+          <div className="flex gap-6 w-full items-start">
+            <div className="flex-1">
               <div className="flex justify-center">
                 <div>
                   {started && (
@@ -297,34 +299,36 @@ export const Game = () => {
                 </div>
               </div>
             </div>
-            <div className="rounded-md pt-2 bg-bgAuxiliary3 flex-1 overflow-auto h-[95vh] overflow-y-scroll no-scrollbar">
+            <div className="rounded-2xl pt-2 bg-slate-900/60 border border-slate-800 w-[340px] shrink-0 overflow-auto h-[95vh] no-scrollbar">
               {!started ? (
                 <div className="pt-8 flex justify-center w-full">
                   {added ? (
-                    <div className="flex flex-col items-center space-y-4 justify-center">
-                      <div className="text-white">
-                        <Waitopponent />
-                      </div>
+                    <div className="flex flex-col items-center space-y-6 justify-center w-full px-6">
+                      <Waitopponent />
                       <ShareGame gameId={gameID} />
                     </div>
                   ) : (
                     gameId === 'random' && (
-                      <Button
-                        onClick={() => {
-                          socket.send(
-                            JSON.stringify({
-                              type: INIT_GAME,
-                            })
-                          );
-                        }}
-                      >
-                        Play
-                      </Button>
+                      <div className="flex flex-col items-center gap-4 w-full px-6">
+                        <p className="text-slate-400 text-sm text-center">Start a new random match online</p>
+                        <button
+                          onClick={() => {
+                            socket.send(
+                              JSON.stringify({
+                                type: INIT_GAME,
+                              })
+                            );
+                          }}
+                          className="px-8 py-4 text-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 w-full"
+                        >
+                          Play Now
+                        </button>
+                      </div>
                     )
                   )}
                 </div>
               ) : (
-                <div className="p-8 flex justify-center w-full">
+                <div className="p-6 flex justify-center w-full">
                   <ExitGameModel onClick={() => handleExit()} />
                 </div>
               )}
