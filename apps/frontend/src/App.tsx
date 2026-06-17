@@ -7,6 +7,7 @@ import "./themes.css";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Landing } from './screens/Landing';
 import { Game } from './screens/Game';
+import { Dashboard } from './screens/Dashboard';
 import Login from './screens/Login';
 import { Suspense } from 'react';
 import { RecoilRoot } from 'recoil';
@@ -52,6 +53,10 @@ function AuthApp() {
         >
           <Route path="themes" element={<Themes />} />
         </Route>
+        <Route
+          path="/dashboard"
+          element={<Dashboard />}
+        />
       </Routes>
     </BrowserRouter>
   );
