@@ -152,8 +152,10 @@ export class Game {
     this.startTime = new Date(Date.now());
     this.lastMoveTime = this.startTime;
 
-    const game = await db.game.create({
-      data: {
+    await db.game.upsert({
+      where: { id: this.gameId },
+      update: {},
+      create: {
         id: this.gameId,
         timeControl: 'CLASSICAL',
         status: 'IN_PROGRESS',
@@ -166,7 +168,7 @@ export class Game {
         },
         blackPlayer: {
           connect: {
-            id: this.player2UserId ?? '',
+            id: this.player2UserId ?? this.player1UserId,
           },
         },
       },
@@ -175,7 +177,6 @@ export class Game {
         blackPlayer: true,
       },
     });
-    this.gameId = game.id;
   }
 
   async addMoveToDb(move: Move, moveTimestamp: Date) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL, useUserStore } from '@repo/store/userAtom';
 import { Swords, Bot, Sparkles, Zap, Radio, User, Flame, Trophy } from 'lucide-react';
 import { TimeControlValue } from '@/types/chess-landing';
 
@@ -11,6 +12,7 @@ interface LandingPlayCardProps {
 
 export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulatedMatch, onSetMode }) => {
   const navigate = useNavigate();
+  const setUser = useUserStore((state) => state.setUser);
   const [activeTab, setActiveTab] = useState<'multiplayer' | 'bot' | 'puzzle'>('multiplayer');
   const [timeControl, setTimeControl] = useState<TimeControlValue>('3+0');
   const [username, setUsername] = useState('');
@@ -67,11 +69,25 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
     return () => clearInterval(interval);
   }, [searchStatus, matchCountdown, opponent]);
 
-  const handleStartSearch = (e: React.FormEvent) => {
+  const handleStartSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSearching(true);
     setSearchStatus('searching');
     onSetMode('freeplay');
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/guest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: username.trim() || undefined }),
+      });
+      if (response.ok) {
+        const guestData = await response.json();
+        setUser(guestData);
+      }
+    } catch (err) {
+      console.error('Failed to create guest user:', err);
+    }
   };
 
   const cancelSearch = () => {

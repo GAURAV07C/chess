@@ -18,7 +18,7 @@ import {
   ChevronRight,
   UserRound,
 } from 'lucide-react';
-import { useUser } from '@repo/store/useUser';
+import { useUserStore } from '@repo/store/userAtom';
 import { useEffect, useState, useMemo } from 'react';
 
 const MODES = [
@@ -77,15 +77,37 @@ const MODES = [
     href: null,
   },
 ];
+const dailyPuzzle = {
+  difficulty: 'Hard',
+  rating: '1850',
+  title: 'Knight Fork Extravaganza',
+  moves: '4 moves to mate',
+  timeLeft: '12h 45m',
+};
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const user = useUser();
+  const user = useUserStore((state) => state.user);
+  const hydrated = useUserStore((state) => state.hydrated);
+  const refreshUser = useUserStore((state) => state.refreshUser);
   const [mounted, setMounted] = useState(false);
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
-    setMounted(true);
+    let cancelled = false;
+    const init = async () => {
+      await refreshUser();
+      if (!cancelled) {
+        setMounted(true);
+      }
+    };
+    init();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshUser]);
+
+  useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('Good morning');
     else if (hour < 18) setGreeting('Good afternoon');
@@ -104,26 +126,15 @@ export const Dashboard = () => {
 
   const quickStats = useMemo(
     () => [
-      { label: 'Win Rate', value: '64.2%', icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-      { label: 'Rating', value: '1,247', icon: Star, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-      { label: 'Matches', value: '142', icon: Swords, color: 'text-sky-400', bg: 'bg-sky-500/10' },
-      { label: 'Streak', value: '5', icon: Flame, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+      { label: 'Win Rate', value: '64.2%', icon: TrendingUp, color: 'text-emerald-400' },
+      { label: 'Rating', value: '1,247', icon: Star, color: 'text-amber-400' },
+      { label: 'Matches', value: '142', icon: Swords, color: 'text-sky-400' },
+      { label: 'Streak', value: '5', icon: Flame, color: 'text-orange-400' },
     ],
     []
   );
 
-  const dailyPuzzle = useMemo(
-    () => ({
-      title: 'Backrank Mate',
-      difficulty: 'Medium',
-      rating: 1650,
-      moves: '3 moves',
-      timeLeft: '14h 23m',
-    }),
-    []
-  );
-
-  if (!user && !mounted) return null;
+  if (!hydrated || !mounted) return null;
   if (!user) return null;
 
   return (
