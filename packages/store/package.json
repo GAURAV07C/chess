@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "exports": {
+    ".": "./src/index.ts",
     "./useUser": "./src/useUser.ts",
     "./userAtom": "./src/userAtom.ts",
     "./chessBoard": "./src/chessBoard.ts"
