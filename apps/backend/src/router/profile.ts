@@ -114,7 +114,6 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
       recentGames: allGames.slice(0, 20),
     });
   } catch (err) {
-    console.error('Profile fetch error', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

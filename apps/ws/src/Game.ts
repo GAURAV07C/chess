@@ -72,7 +72,6 @@ export class Game {
       createdAt: Date;
     }[]
   ) {
-    console.log(moves);
     moves.forEach((move) => {
       if (isPromoting(this.board, move.from as Square, move.to as Square)) {
         this.board.move({
@@ -206,7 +205,6 @@ export class Game {
   }
 
   async makeMove(user: User, move: Move) {
-    // validate the type of move using zod
     if (this.board.turn() === 'w' && user.userId !== this.player1UserId) {
       return;
     }
@@ -214,7 +212,6 @@ export class Game {
     if (this.board.turn() === 'b' && user.userId !== this.player2UserId) {
       return;
     }
-
     if (this.result) {
       console.error(`User ${user.userId} is making a move post game completion`);
       return;
@@ -240,7 +237,6 @@ export class Game {
       return;
     }
 
-    // flipped because move has already happened
     if (this.board.turn() === 'b') {
       this.player1TimeConsumed = this.player1TimeConsumed + (moveTimestamp.getTime() - this.lastMoveTime.getTime());
     }
@@ -350,7 +346,6 @@ export class Game {
         },
       })
     );
-    // clear timers
     this.clearTimer();
     this.clearMoveTimer();
   }

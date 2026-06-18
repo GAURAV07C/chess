@@ -53,14 +53,11 @@ router.post('/guest', async (req: Request, res: Response) => {
     });
     res.json(UserDetails);
   } catch (err) {
-    console.error('Guest login error:', err);
     res.status(500).json({ message: 'Failed to create guest account' });
   }
 });
 
 router.get('/refresh', async (req: Request, res: Response) => {
-  console.log('[refresh] cookies:', req.cookies);
-  console.log('[refresh] req.user:', req.user);
   if (req.user) {
     const user = req.user as UserDetails;
 
@@ -77,7 +74,6 @@ router.get('/refresh', async (req: Request, res: Response) => {
       name: userDb?.name,
     });
   } else if (req.cookies && req.cookies.guest) {
-    console.log('[refresh] using guest cookie');
     const decoded = jwt.verify(req.cookies.guest, JWT_SECRET) as userJwtClaims;
     const token = jwt.sign({ userId: decoded.userId, name: decoded.name, isGuest: true }, JWT_SECRET);
     let User: UserDetails = {
@@ -89,7 +85,6 @@ router.get('/refresh', async (req: Request, res: Response) => {
     res.cookie('guest', token, { maxAge: COOKIE_MAX_AGE });
     res.json(User);
   } else {
-    console.log('[refresh] no auth found, returning 401');
     res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 });
@@ -102,9 +97,9 @@ router.get('/logout', (req: Request, res: Response) => {
   res.clearCookie('guest');
   res.clearCookie('jwt');
   req.logout((err) => {
-    if (err) {
-      console.error('Error logging out:', err);
-    }
+if (err) {
+  console.error('Error logging out:', err);
+}
   });
   res.status(200).json({ message: 'Logged out successfully' });
 });

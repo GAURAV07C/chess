@@ -166,7 +166,6 @@ export const Game = () => {
           });
           setPlayer1TimeConsumed(message.payload.player1TimeConsumed);
           setPlayer2TimeConsumed(message.payload.player2TimeConsumed);
-          console.error(message.payload);
           setStarted(true);
 
           message.payload.moves.map((x: Move) => {
@@ -221,11 +220,13 @@ export const Game = () => {
     const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
 
     return (
-      <div className={`font-mono text-xl font-bold px-4 py-2 rounded-xl border shadow-inner ${
-        timeLeftMs < 60000 
-          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse' 
-          : 'bg-slate-900/80 text-white border-slate-800'
-      }`}>
+      <div
+        className={`font-mono text-xl font-bold px-4 py-2 rounded-xl border shadow-inner ${
+          timeLeftMs < 60000
+            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
+            : 'bg-slate-900/80 text-white border-slate-800'
+        }`}
+      >
         {minutes < 10 ? '0' : ''}
         {minutes}:{remainingSeconds < 10 ? '0' : ''}
         {remainingSeconds}
@@ -278,9 +279,15 @@ export const Game = () => {
       <div className="w-full flex justify-center pt-6 mb-2">
         {started ? (
           <div className="flex items-center gap-2 px-6 py-2 rounded-full bg-slate-900/80 border border-slate-800 shadow-lg backdrop-blur-md transition-all">
-            <div className={`w-2.5 h-2.5 rounded-full ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`} />
-            <span className={`text-sm font-bold tracking-wide ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'text-amber-400' : 'text-slate-400'}`}>
-              {(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
+            <div
+              className={`w-2.5 h-2.5 rounded-full ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`}
+            />
+            <span
+              className={`text-sm font-bold tracking-wide ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'text-amber-400' : 'text-slate-400'}`}
+            >
+              {(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn()
+                ? 'Your turn'
+                : "Opponent's turn"}
             </span>
           </div>
         ) : (
@@ -290,7 +297,6 @@ export const Game = () => {
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 pb-12 w-full">
         <div className="flex flex-col lg:flex-row gap-8 w-full items-center lg:items-start">
-          
           {/* Main Board Area */}
           <div className="flex-1 w-full max-w-[600px] mx-auto lg:mx-0 flex flex-col gap-4">
             {started && (
@@ -299,7 +305,7 @@ export const Game = () => {
                 {getTimer(user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
               </div>
             )}
-            
+
             <div className="w-full rounded-xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800/50">
               <ChessBoard
                 started={started}
@@ -323,7 +329,6 @@ export const Game = () => {
           {/* Right Sidebar */}
           <div className="w-full lg:w-[380px] shrink-0 flex flex-col gap-4">
             <div className="rounded-2xl bg-slate-950/60 border border-slate-800 shadow-xl backdrop-blur-md overflow-hidden flex flex-col h-[500px] lg:h-[calc(100vh-140px)] min-h-[500px]">
-              
               {!started ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8">
                   {added ? (
@@ -337,7 +342,20 @@ export const Game = () => {
                     gameId === 'random' && (
                       <div className="flex flex-col items-center gap-6 w-full text-center">
                         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 mb-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="32"
+                            height="32"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-amber-500"
+                          >
+                            <path d="M12 20v-6M6 20V10M18 20V4" />
+                          </svg>
                         </div>
                         <div>
                           <h2 className="text-2xl font-bold text-white font-serif mb-2">Quick Match</h2>
@@ -374,10 +392,8 @@ export const Game = () => {
                   </div>
                 </>
               )}
-
             </div>
           </div>
-          
         </div>
       </div>
     </div>

@@ -31,7 +31,7 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
 
   // Simulated matchmaking
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
     if (searchStatus === 'searching') {
       const opponentsList = [
         { id: '1', name: 'Grandmaster_Magnus', rating: 2882, country: '🇳🇴' },
@@ -40,7 +40,7 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
         { id: '4', name: 'Beth_Harmon', rating: 2500, country: '🇺🇸' },
         { id: '5', name: 'Garry_K', rating: 2851, country: '🇭🇷' },
         { id: '6', name: 'ChessSlayer99', rating: 1640, country: '🇬🇧' },
-        { id: '7', name: 'Deep_Chess_Bot', rating: 3200, country: '🤖' }
+        { id: '7', name: 'Deep_Chess_Bot', rating: 3200, country: '🤖' },
       ];
       timer = setTimeout(() => {
         const randomOpp = opponentsList[Math.floor(Math.random() * opponentsList.length)];
@@ -54,10 +54,10 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
 
   // Match countdown then navigate to real game
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (searchStatus === 'matched' && matchCountdown > 0) {
       interval = setInterval(() => {
-        setMatchCountdown(prev => prev - 1);
+        setMatchCountdown((prev) => prev - 1);
       }, 1000);
     } else if (searchStatus === 'matched' && matchCountdown === 0) {
       if (opponent) {
@@ -67,7 +67,7 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
       setTimeout(() => navigate('/game/random'), 500);
     }
     return () => clearInterval(interval);
-  }, [searchStatus, matchCountdown, opponent]);
+  }, [searchStatus, matchCountdown, opponent, onStartSimulatedMatch, navigate]);
 
   const handleStartSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +86,7 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
         setUser(guestData);
       }
     } catch (err) {
-      console.error('Failed to create guest user:', err);
+      console.log('error', err);
     }
   };
 
@@ -98,11 +98,14 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
 
   return (
     <div className="flex flex-col w-full max-w-[480px] bg-[#090d16]/90 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden self-start">
-      
       {/* Tabs */}
       <div className="flex border-b border-slate-900 bg-slate-950/70 p-2 gap-1.5">
         <button
-          onClick={() => { setActiveTab('multiplayer'); onSetMode('freeplay'); if (isSearching) cancelSearch(); }}
+          onClick={() => {
+            setActiveTab('multiplayer');
+            onSetMode('freeplay');
+            if (isSearching) cancelSearch();
+          }}
           className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === 'multiplayer'
               ? 'bg-slate-800 text-white border border-slate-700 shadow-md'
@@ -113,7 +116,11 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
           <span>Live Match</span>
         </button>
         <button
-          onClick={() => { setActiveTab('puzzle'); onSetMode('puzzle'); if (isSearching) cancelSearch(); }}
+          onClick={() => {
+            setActiveTab('puzzle');
+            onSetMode('puzzle');
+            if (isSearching) cancelSearch();
+          }}
           className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === 'puzzle'
               ? 'bg-slate-800 text-white border border-slate-700 shadow-md'
@@ -124,7 +131,11 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
           <span>Daily Tactics</span>
         </button>
         <button
-          onClick={() => { setActiveTab('bot'); onSetMode('freeplay'); if (isSearching) cancelSearch(); }}
+          onClick={() => {
+            setActiveTab('bot');
+            onSetMode('freeplay');
+            if (isSearching) cancelSearch();
+          }}
           className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === 'bot'
               ? 'bg-slate-800 text-white border border-slate-700 shadow-md'
@@ -158,7 +169,8 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                   </div>
                   <h3 className="font-serif text-2xl font-bold text-white mb-2">Matchmaking...</h3>
                   <p className="text-sm text-slate-400 max-w-[280px] mb-6">
-                    Searching for an active opponent near your rating in <span className="text-amber-400">{timeControl}</span> room.
+                    Searching for an active opponent near your rating in{' '}
+                    <span className="text-amber-400">{timeControl}</span> room.
                   </p>
                   <div className="bg-slate-950/70 border border-slate-800 rounded-xl py-3 px-4 w-full text-left font-mono text-[11px] text-zinc-400 space-y-1 max-w-[325px]">
                     <div className="flex justify-between items-center">
@@ -194,19 +206,27 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                       </span>
                     </div>
                     <div className="flex flex-col items-center justify-center px-4">
-                      <span className="text-sm font-semibold text-amber-400 uppercase tracking-widest animate-bounce">VS</span>
+                      <span className="text-sm font-semibold text-amber-400 uppercase tracking-widest animate-bounce">
+                        VS
+                      </span>
                       <div className="text-2xl font-serif font-black text-white mt-1">{matchCountdown}</div>
                     </div>
                     <div className="flex flex-col items-center">
                       <div className="w-14 h-14 rounded-full bg-slate-950 flex items-center justify-center border-2 border-amber-500 shadow-lg shadow-amber-950/20">
                         <span className="text-2xl">{opponent?.country}</span>
                       </div>
-                      <span className="text-[11px] font-semibold text-amber-400 mt-1.5 truncate max-w-[100px]">{opponent?.name}</span>
+                      <span className="text-[11px] font-semibold text-amber-400 mt-1.5 truncate max-w-[100px]">
+                        {opponent?.name}
+                      </span>
                       <span className="text-[9px] text-slate-500 font-mono">({opponent?.rating} ELO)</span>
                     </div>
                   </div>
-                  <h3 className="font-serif text-2xl font-black text-rose-400 mb-2 tracking-tight">Opponent Sighted!</h3>
-                  <p className="text-sm text-slate-300 max-w-[300px]">Prepare yourself. Match is booting up. Good luck!</p>
+                  <h3 className="font-serif text-2xl font-black text-rose-400 mb-2 tracking-tight">
+                    Opponent Sighted!
+                  </h3>
+                  <p className="text-sm text-slate-300 max-w-[300px]">
+                    Prepare yourself. Match is booting up. Good luck!
+                  </p>
                 </>
               )}
             </motion.div>
@@ -227,7 +247,7 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                         Choose Time Control
                       </label>
                       <div className="grid grid-cols-2 gap-2">
-                        {timeControls.map(tc => {
+                        {timeControls.map((tc) => {
                           const isActive = timeControl === tc.value;
                           return (
                             <button
@@ -245,7 +265,9 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                                 <span className="text-sm font-bold text-white">{tc.label}</span>
                               </div>
                               <span className="text-[10px] text-slate-400 font-mono mt-1">{tc.sub}</span>
-                              {isActive && <span className="absolute top-1 right-2 w-1.5 h-1.5 bg-amber-400 rounded-full" />}
+                              {isActive && (
+                                <span className="absolute top-1 right-2 w-1.5 h-1.5 bg-amber-400 rounded-full" />
+                              )}
                             </button>
                           );
                         })}
@@ -266,7 +288,7 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                           type="text"
                           required
                           value={username}
-                          onChange={e => setUsername(e.target.value)}
+                          onChange={(e) => setUsername(e.target.value)}
                           placeholder="MagnusFanatic / GarryG"
                           className="w-full bg-slate-950/60 pl-8 pr-4 py-3.5 rounded-xl border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20"
                         />
@@ -290,8 +312,12 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                         <Trophy className="w-6 h-6" />
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Today's Grand Arena</span>
-                        <h4 className="font-serif text-lg font-bold text-white mb-0.5 leading-tight">Crush the Back Rank</h4>
+                        <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                          Today's Grand Arena
+                        </span>
+                        <h4 className="font-serif text-lg font-bold text-white mb-0.5 leading-tight">
+                          Crush the Back Rank
+                        </h4>
                         <p className="text-xs text-slate-400">White to move and deliver mate in 1 move.</p>
                       </div>
                     </div>
@@ -324,9 +350,24 @@ export const LandingPlayCard: React.FC<LandingPlayCardProps> = ({ onStartSimulat
                       </span>
                       <div className="space-y-2.5">
                         {[
-                          { title: 'Challenger Bot (Easy)', rating: '800 ELO', color: 'text-emerald-400', desc: 'Capable of errors. Great for practice.' },
-                          { title: 'The Mentor (Medium)', rating: '1600 ELO', color: 'text-sky-400', desc: 'Plays solid positionals. Teaches errors fast.' },
-                          { title: 'Stockfish 16 (Extreme)', rating: '3500 ELO', color: 'text-rose-500', desc: 'Absolute supercomputer. Zero tolerance.' },
+                          {
+                            title: 'Challenger Bot (Easy)',
+                            rating: '800 ELO',
+                            color: 'text-emerald-400',
+                            desc: 'Capable of errors. Great for practice.',
+                          },
+                          {
+                            title: 'The Mentor (Medium)',
+                            rating: '1600 ELO',
+                            color: 'text-sky-400',
+                            desc: 'Plays solid positionals. Teaches errors fast.',
+                          },
+                          {
+                            title: 'Stockfish 16 (Extreme)',
+                            rating: '3500 ELO',
+                            color: 'text-rose-500',
+                            desc: 'Absolute supercomputer. Zero tolerance.',
+                          },
                         ].map((botObj, index) => (
                           <button
                             key={index}

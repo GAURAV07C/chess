@@ -5,10 +5,7 @@ import { THEMES_DATA } from '@/constants/themes';
 import { LandingPlayCard } from '@/components/LandingPlayCard';
 import { LandingChessboard } from '@/components/LandingChessboard';
 import { LandingFooter } from '@/components/LandingFooter';
-import {
-   Swords, Sparkles, Github, Play,
-  Layers, Users, Shield, Cpu, Flame, Zap
-} from 'lucide-react';
+import { Swords, Sparkles, Github, Play, Layers, Users, Shield, Cpu, Flame, Zap } from 'lucide-react';
 
 export const Landing: React.FC = () => {
   const { currentTheme, setTheme } = useThemeContext();
@@ -20,8 +17,22 @@ export const Landing: React.FC = () => {
   const [leaderboardTab, setLeaderboardTab] = useState<'global' | 'puzzles'>('global');
 
   const communityPuzzles = [
-    { id: 'puzzle-1', name: 'Classic Smothered Mate', difficulty: 'Medium', rating: 1650, solvedCount: '18.4k', moves: 3 },
-    { id: 'puzzle-2', name: 'Tactical Rook Sacrifice', difficulty: 'Hard', rating: 2150, solvedCount: '11.2k', moves: 4 },
+    {
+      id: 'puzzle-1',
+      name: 'Classic Smothered Mate',
+      difficulty: 'Medium',
+      rating: 1650,
+      solvedCount: '18.4k',
+      moves: 3,
+    },
+    {
+      id: 'puzzle-2',
+      name: 'Tactical Rook Sacrifice',
+      difficulty: 'Hard',
+      rating: 2150,
+      solvedCount: '11.2k',
+      moves: 4,
+    },
     { id: 'puzzle-3', name: 'Master Defense Trap', difficulty: 'Insane', rating: 2580, solvedCount: '3.9k', moves: 5 },
   ];
 
@@ -47,9 +58,11 @@ export const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-transparent selection:bg-amber-500/30 selection:text-white flex flex-col justify-between relative overflow-hidden">
-
       {/* Background glows */}
-      <div className="absolute top-[-200px] left-[10%] w-[700px] h-[700px] rounded-full bg-amber-500/[0.08] blur-[150px] pointer-events-none -z-10 animate-pulse" style={{ animationDuration: '10s' }} />
+      <div
+        className="absolute top-[-200px] left-[10%] w-[700px] h-[700px] rounded-full bg-amber-500/[0.08] blur-[150px] pointer-events-none -z-10 animate-pulse"
+        style={{ animationDuration: '10s' }}
+      />
       <div className="absolute bottom-[15%] right-[5%] w-[600px] h-[600px] rounded-full bg-[#1e293b]/15 blur-[130px] pointer-events-none -z-10" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.004)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.004)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none -z-20" />
 
@@ -100,7 +113,6 @@ export const Landing: React.FC = () => {
 
       {/* Main */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 md:px-14 py-8 md:py-16 space-y-32">
-
         {/* === SECTION 1: HERO === */}
         <motion.div
           id="play"
@@ -138,7 +150,8 @@ export const Landing: React.FC = () => {
                 transition={{ delay: 0.25, duration: 0.6 }}
                 className="text-sm md:text-base text-slate-400 max-w-[550px]"
               >
-                Experience high-performance online chess with gorgeous dynamic board customizations and responsive puzzles. Try solving the interactive puzzles below for instant tactical workouts!
+                Experience high-performance online chess with gorgeous dynamic board customizations and responsive
+                puzzles. Try solving the interactive puzzles below for instant tactical workouts!
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -147,7 +160,7 @@ export const Landing: React.FC = () => {
                 className="flex flex-wrap items-center gap-3.5 pt-3"
               >
                 <a
-                  href="#play"
+                  href="/login"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                   <Play className="w-4 h-4 fill-slate-950" />
@@ -230,11 +243,16 @@ export const Landing: React.FC = () => {
                     <div className="relative group rounded-2xl overflow-hidden border border-slate-800 shadow-2xl w-full aspect-square">
                       <img
                         className="rounded-2xl w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-700 max-h-[730px]"
-                        src={currentTheme?.boardImage || 'https://images.unsplash.com/photo-1523821741446-edb2b68bb7a0?auto=format&fit=crop&q=80&w=650&h=650'}
+                        src={
+                          currentTheme?.boardImage ||
+                          'https://images.unsplash.com/photo-1523821741446-edb2b68bb7a0?auto=format&fit=crop&q=80&w=650&h=650'
+                        }
                         alt="chess-board"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-5">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-amber-500 mb-0.5">Active Skin Preview</span>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-amber-500 mb-0.5">
+                          Active Skin Preview
+                        </span>
                         <h4 className="font-serif text-lg font-bold text-white leading-tight">{currentTheme?.name}</h4>
                         <p className="text-xs text-slate-300 max-w-[280px] mt-1">{currentTheme?.description}</p>
                       </div>
@@ -276,12 +294,15 @@ export const Landing: React.FC = () => {
                 Responsive Theme Selection
               </h2>
               <p className="text-xs md:text-sm text-slate-400 mt-2 max-w-[500px]">
-                Switch through our pristine selection of tactical gameboards. Test contrasts and coordinate visibility in real-time.
+                Switch through our pristine selection of tactical gameboards. Test contrasts and coordinate visibility
+                in real-time.
               </p>
             </div>
             <div className="text-xs text-slate-400 bg-[#070a13] px-3.5 py-2 border border-slate-800 rounded-xl font-mono flex items-center gap-2">
               <Layers className="w-4 h-4 text-amber-500" />
-              <span>Selected: <strong className="text-white font-sans">{currentTheme?.name}</strong></span>
+              <span>
+                Selected: <strong className="text-white font-sans">{currentTheme?.name}</strong>
+              </span>
             </div>
           </div>
 
@@ -307,7 +328,9 @@ export const Landing: React.FC = () => {
                     <div className={t.darkSquare} />
                     <div className={t.lightSquare} />
                   </div>
-                  <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">{t.name}</h4>
+                  <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">
+                    {t.name}
+                  </h4>
                   <p className="text-[11px] text-slate-400 mt-1.5 leading-normal flex-1">{t.description}</p>
                   {isActive && (
                     <span className="absolute top-2 right-2 flex h-2 w-2">
@@ -341,7 +364,9 @@ export const Landing: React.FC = () => {
                   </span>
                   <span className="text-slate-500 text-xs font-mono">Synced 1s ago</span>
                 </div>
-                <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-white tracking-tight">Active Live Arena</h2>
+                <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                  Active Live Arena
+                </h2>
                 <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-[500px]">
                   Climb standard divisions, challenge grandmaster champions, or solve high-reward tactical puzzles.
                 </p>
@@ -350,7 +375,9 @@ export const Landing: React.FC = () => {
                 <button
                   onClick={() => setLeaderboardTab('global')}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    leaderboardTab === 'global' ? 'bg-amber-500 text-slate-950 font-bold shadow-lg' : 'text-slate-400 hover:text-white'
+                    leaderboardTab === 'global'
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-lg'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Global Grandmasters
@@ -358,7 +385,9 @@ export const Landing: React.FC = () => {
                 <button
                   onClick={() => setLeaderboardTab('puzzles')}
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    leaderboardTab === 'puzzles' ? 'bg-amber-500 text-slate-950 font-bold shadow-lg' : 'text-slate-400 hover:text-white'
+                    leaderboardTab === 'puzzles'
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-lg'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Tactical Puzzles
@@ -386,17 +415,32 @@ export const Landing: React.FC = () => {
                         className="grid grid-cols-[65px,1fr,115px] items-center px-6 py-4 transition-colors text-xs group relative overflow-hidden"
                       >
                         <div className="font-mono text-xs font-bold text-slate-400 flex items-center">
-                          {player.rank === 1 ? <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">🥇</span>
-                          : player.rank === 2 ? <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-400/15 border border-slate-400/20 text-slate-300 text-sm">🥈</span>
-                          : player.rank === 3 ? <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-800/15 border border-amber-800/20 text-amber-600 text-sm">🥉</span>
-                          : <span className="pl-2">#{player.rank}</span>}
+                          {player.rank === 1 ? (
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+                              🥇
+                            </span>
+                          ) : player.rank === 2 ? (
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-400/15 border border-slate-400/20 text-slate-300 text-sm">
+                              🥈
+                            </span>
+                          ) : player.rank === 3 ? (
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-800/15 border border-amber-800/20 text-amber-600 text-sm">
+                              🥉
+                            </span>
+                          ) : (
+                            <span className="pl-2">#{player.rank}</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-3.5">
                           <div className="text-xl shrink-0">{player.country}</div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-white group-hover:text-amber-400 transition-colors text-[13px] md:text-sm">{player.name}</span>
-                              <span className="bg-slate-900/90 border border-slate-800 text-slate-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">{player.title}</span>
+                              <span className="font-bold text-white group-hover:text-amber-400 transition-colors text-[13px] md:text-sm">
+                                {player.name}
+                              </span>
+                              <span className="bg-slate-900/90 border border-slate-800 text-slate-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">
+                                {player.title}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1 mt-1 text-[11px] text-slate-500">
                               <Flame className="w-3 h-3 text-orange-500" />
@@ -413,7 +457,11 @@ export const Landing: React.FC = () => {
                 </div>
                 <div className="bg-slate-900/10 border border-dashed border-slate-800/80 rounded-xl p-4 text-center">
                   <p className="text-xs text-slate-500">
-                    Complete any <a href="#play" className="text-amber-500 hover:underline">arena match</a> to automatically join the ranking database.
+                    Complete any{' '}
+                    <a href="#play" className="text-amber-500 hover:underline">
+                      arena match
+                    </a>{' '}
+                    to automatically join the ranking database.
                   </p>
                 </div>
               </div>
@@ -428,15 +476,23 @@ export const Landing: React.FC = () => {
                     <div className="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-transparent blur-xl rounded-full pointer-events-none" />
                     <div className="space-y-3.5">
                       <div className="flex items-center justify-between">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest ${
-                          puzzle.difficulty === 'Medium' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
-                          : puzzle.difficulty === 'Hard' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/15'
-                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/15 animate-pulse'
-                        }`}>{puzzle.difficulty}</span>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest ${
+                            puzzle.difficulty === 'Medium'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
+                              : puzzle.difficulty === 'Hard'
+                                ? 'bg-orange-500/10 text-orange-400 border border-orange-500/15'
+                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/15 animate-pulse'
+                          }`}
+                        >
+                          {puzzle.difficulty}
+                        </span>
                         <span className="font-mono text-xs font-bold text-amber-500">#{puzzle.rating} ELO</span>
                       </div>
                       <div className="space-y-1">
-                        <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">{puzzle.name}</h4>
+                        <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">
+                          {puzzle.name}
+                        </h4>
                         <p className="text-xs text-slate-400 font-mono">{puzzle.moves} moves to checkmate</p>
                       </div>
                     </div>
@@ -446,7 +502,11 @@ export const Landing: React.FC = () => {
                         <span className="text-emerald-500">92.4% pass</span>
                       </div>
                       <button
-                        onClick={() => { setChessboardType('puzzle'); setBoardMode('interactive'); document.getElementById('play')?.scrollIntoView({ behavior: 'smooth' }); }}
+                        onClick={() => {
+                          setChessboardType('puzzle');
+                          setBoardMode('interactive');
+                          document.getElementById('play')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
                         className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-500/30 hover:bg-slate-950/90 text-[10.5px] text-white font-extrabold uppercase tracking-wider transition-all cursor-pointer"
                       >
                         <Zap className="w-3 h-3 text-amber-500" />
@@ -470,18 +530,24 @@ export const Landing: React.FC = () => {
             <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-3xl pointer-events-none rounded-full" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/5 blur-3xl pointer-events-none rounded-full" />
             <div className="space-y-1">
-              <span className="text-xs font-bold text-amber-500 uppercase tracking-widest font-mono">Real-time Diagnostics</span>
+              <span className="text-xs font-bold text-amber-500 uppercase tracking-widest font-mono">
+                Real-time Diagnostics
+              </span>
               <h3 className="font-serif text-2xl font-bold text-white tracking-tight">Arena Systems Status</h3>
               <p className="text-slate-400 text-xs">Active server pools monitoring game node performance.</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-slate-950/80 border border-slate-900 p-4 rounded-xl text-left">
-                <span className="block text-[10px] text-slate-500 uppercase font-mono tracking-wider">Lobby Latency</span>
+                <span className="block text-[10px] text-slate-500 uppercase font-mono tracking-wider">
+                  Lobby Latency
+                </span>
                 <span className="block text-xl font-bold text-emerald-400 mt-1 font-mono">14ms</span>
                 <span className="block text-[10px] text-slate-600 mt-1">Excellent stability</span>
               </div>
               <div className="bg-slate-950/80 border border-slate-900 p-4 rounded-xl text-left">
-                <span className="block text-[10px] text-slate-500 uppercase font-mono tracking-wider">Anticheat Rate</span>
+                <span className="block text-[10px] text-slate-500 uppercase font-mono tracking-wider">
+                  Anticheat Rate
+                </span>
                 <span className="block text-xl font-bold text-amber-400 mt-1 font-mono">99.98%</span>
                 <span className="block text-[10px] text-slate-600 mt-1">Secure shielding active</span>
               </div>
@@ -489,12 +555,29 @@ export const Landing: React.FC = () => {
             <div className="h-[1px] bg-slate-900/60" />
             <div className="space-y-5">
               {[
-                { icon: <Shield className="w-4 h-4" />, color: 'text-amber-500', title: 'Anti-Cheat Engine Shield', desc: 'Advanced cloud heuristic analysis parses chess node moves per millisecond to prevent assistance software exploitation.' },
-                { icon: <Cpu className="w-4 h-4" />, color: 'text-sky-400', title: 'Stockfish 16 Engine Analytics', desc: 'Integrated client evaluation curves powered by multi-threaded neural networks for post-game split breakdowns.' },
-                { icon: <Users className="w-4 h-4" />, color: 'text-emerald-400', title: 'Global Matchmaking Pools', desc: 'Dynamic matchmaking engine pairs challengers based on active checkmate rates, ELO metrics, and region.' },
+                {
+                  icon: <Shield className="w-4 h-4" />,
+                  color: 'text-amber-500',
+                  title: 'Anti-Cheat Engine Shield',
+                  desc: 'Advanced cloud heuristic analysis parses chess node moves per millisecond to prevent assistance software exploitation.',
+                },
+                {
+                  icon: <Cpu className="w-4 h-4" />,
+                  color: 'text-sky-400',
+                  title: 'Stockfish 16 Engine Analytics',
+                  desc: 'Integrated client evaluation curves powered by multi-threaded neural networks for post-game split breakdowns.',
+                },
+                {
+                  icon: <Users className="w-4 h-4" />,
+                  color: 'text-emerald-400',
+                  title: 'Global Matchmaking Pools',
+                  desc: 'Dynamic matchmaking engine pairs challengers based on active checkmate rates, ELO metrics, and region.',
+                },
               ].map((feat, i) => (
                 <div key={i} className="flex gap-4 p-1 rounded-xl transition-all duration-300">
-                  <div className={`w-10 h-10 rounded-xl bg-slate-950 border border-slate-900 shrink-0 flex items-center justify-center ${feat.color} shadow-md`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl bg-slate-950 border border-slate-900 shrink-0 flex items-center justify-center ${feat.color} shadow-md`}
+                  >
                     {feat.icon}
                   </div>
                   <div>
@@ -537,7 +620,8 @@ export const Landing: React.FC = () => {
                   Found an Issue!
                 </h2>
                 <p className="text-sm md:text-base text-slate-300 leading-relaxed max-w-[550px]">
-                  Please create an issue in our github website below. You are also warmly invited to contribute to our digital chess arena, help add game skins, and customize layouts.
+                  Please create an issue in our github website below. You are also warmly invited to contribute to our
+                  digital chess arena, help add game skins, and customize layouts.
                 </p>
               </div>
               <motion.a
@@ -552,14 +636,17 @@ export const Landing: React.FC = () => {
                   <Github className="w-6 h-6 text-white group-hover:text-amber-400 transition-colors" />
                 </div>
                 <div className="text-left leading-tight">
-                  <span className="block text-[11px] text-zinc-500 uppercase font-mono font-bold tracking-wider">GitHub Issues page</span>
-                  <span className="font-serif text-lg font-black text-white group-hover:text-amber-400 transition-colors">Submit Here</span>
+                  <span className="block text-[11px] text-zinc-500 uppercase font-mono font-bold tracking-wider">
+                    GitHub Issues page
+                  </span>
+                  <span className="font-serif text-lg font-black text-white group-hover:text-amber-400 transition-colors">
+                    Submit Here
+                  </span>
                 </div>
               </motion.a>
             </div>
           </div>
         </motion.div>
-
       </main>
 
       <LandingFooter />

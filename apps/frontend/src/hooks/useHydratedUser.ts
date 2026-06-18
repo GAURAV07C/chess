@@ -1,10 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
-import { User, BACKEND_URL } from '@repo/store';
-
-const useUserStore = (window as any).__USER_STORE__;
+import { useEffect, useState } from 'react';
+import { User, BACKEND_URL, useUserStore } from '@repo/store';
 
 export const prefetchUser = async (): Promise<User | null> => {
   try {
+    
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -19,6 +18,7 @@ export const prefetchUser = async (): Promise<User | null> => {
   return null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ensureHydrated = async (store: any) => {
   if (!store) return;
   if (!store.getState().hydrated) {

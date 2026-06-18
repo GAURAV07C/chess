@@ -14,8 +14,7 @@ export interface userJwtClaims {
  */
 export const extractAuthUser = (token: string, ws: WebSocket): User => {
   const JWT_SECRET = process.env.JWT_SECRET;
-  if (!JWT_SECRET) {
-    console.error('❌ JWT_SECRET is not defined in environment.');
+    if (!JWT_SECRET) {
     ws.close(1011, 'Server configuration error');
     throw new Error('JWT_SECRET not defined');
   }
@@ -23,7 +22,6 @@ export const extractAuthUser = (token: string, ws: WebSocket): User => {
     const decoded = jwt.verify(token, JWT_SECRET) as userJwtClaims;
     return new User(ws, decoded);
   } catch (err) {
-    console.error('🔐 WS token verification failed:', err);
     ws.close(1008, 'Invalid token');
     throw err;
   }

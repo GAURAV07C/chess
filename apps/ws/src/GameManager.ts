@@ -180,7 +180,6 @@ export class GameManager {
           this.games.push(game);
           availableGame = game;
         }
-
         console.log(availableGame.getPlayer1TimeConsumed());
         console.log(availableGame.getPlayer2TimeConsumed());
 
