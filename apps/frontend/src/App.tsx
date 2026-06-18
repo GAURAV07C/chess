@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { Landing } from './screens/Landing';
 import { Game } from './screens/Game';
 import { Dashboard } from './screens/Dashboard';
@@ -10,6 +10,7 @@ import { Themes } from "./components/themes";
 import { ThemesProvider } from "./context/themeContext";
 import { Loader } from './components/Loader';
 import { Layout } from './layout';
+import { useHydratedUser } from './hooks/useHydratedUser';
 
 import "./App.css";
 import "./themes.css";
@@ -19,6 +20,20 @@ import { BotPlay } from './screens/BotPlay';
 import { PuzzleRush } from './screens/PuzzleRush';
 import { Leaderboard } from './screens/Leaderboard';
 import Tournaments from './screens/Tournaments';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, mounted } = useHydratedUser();
+  if (!mounted) return <Loader />;
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function GuestRoute({ children }: { children: React.ReactNode }) {
+  const { user, mounted } = useHydratedUser();
+  if (!mounted) return <Loader />;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
@@ -42,7 +57,27 @@ function AuthApp() {
         />
         <Route
           path="/login"
-          element={<Login />}
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/game/:gameId"
@@ -78,14 +113,6 @@ function AuthApp() {
         >
           <Route path="themes" element={<Themes />} />
         </Route>
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-        <Route
-          path="/profile"
-          element={<Profile />}
-        />
       </Routes>
     </BrowserRouter>
   );

@@ -6,8 +6,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isLanding = location.pathname === '/';
   const isGame = location.pathname.startsWith('/game/');
+  const isPuzzle = location.pathname === '/puzzle';
+  const isTournaments = location.pathname === '/tournaments';
 
-  if (isLanding || isGame) {
+  if (isLanding || isGame || isPuzzle || isTournaments) {
     return <>{children}</>;
   }
 
