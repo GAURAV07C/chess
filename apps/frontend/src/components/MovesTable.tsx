@@ -10,8 +10,17 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useChessBoardStore } from '@repo/store/chessBoard';
+import { useSocket } from '../hooks/useSocket';
+import { useParams } from 'react-router-dom';
 
-const MovesTable = () => {
+interface MovesTableProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setResult?: React.Dispatch<React.SetStateAction<any>>;
+}
+
+const MovesTable: React.FC<MovesTableProps> = ({ setResult }) => {
+  const { gameId } = useParams();
+  const socket = useSocket();
   const userSelectedMoveIndex = useChessBoardStore((state) => state.userSelectedMoveIndex);
   const setUserSelectedMoveIndex = useChessBoardStore((state) => state.setUserSelectedMoveIndex);
   const toggleBoardFlipped = useChessBoardStore((state) => state.toggleBoardFlipped);
@@ -57,7 +66,7 @@ const MovesTable = () => {
                     userSelectedMoveIndex !== null
                       ? userSelectedMoveIndex === index * 2 + movePairIndex
                       : isLastIndex;
-                  const { san } = move;
+                  const { from, to } = move;
 
                   return (
                     <div
@@ -67,7 +76,7 @@ const MovesTable = () => {
                         setUserSelectedMoveIndex(index * 2 + movePairIndex);
                       }}
                     >
-                      <span className="text-[#C3C3C0]">{san}</span>
+                      <span className="text-[#C3C3C0]">{from}-{to}</span>
                     </div>
                   );
                 })}
@@ -79,11 +88,24 @@ const MovesTable = () => {
       {moves.length ? (
         <div className="w-full p-2 bg-[#20211D] flex items-center justify-between">
           <div className="flex gap-4">
-            <button className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1">
+            <button className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1" onClick={() => {
+              if (setResult) {
+                setResult({ result: 'DRAW', by: 'Draw' });
+              }
+            }}>
               {<HandshakeIcon size={16} />}
               Draw
             </button>
-            <button className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1">
+            <button className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1" onClick={() => {
+              if (socket && gameId) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'EXIT_GAME',
+                    payload: { gameId },
+                  })
+                );
+              }
+            }}>
               {<FlagIcon size={16} />}
               Resign
             </button>

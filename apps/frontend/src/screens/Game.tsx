@@ -221,8 +221,12 @@ export const Game = () => {
     const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
 
     return (
-      <div className="text-white">
-        Time Left: {minutes < 10 ? '0' : ''}
+      <div className={`font-mono text-xl font-bold px-4 py-2 rounded-xl border shadow-inner ${
+        timeLeftMs < 60000 
+          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse' 
+          : 'bg-slate-900/80 text-white border-slate-800'
+      }`}>
+        {minutes < 10 ? '0' : ''}
         {minutes}:{remainingSeconds < 10 ? '0' : ''}
         {remainingSeconds}
       </div>
@@ -245,71 +249,102 @@ export const Game = () => {
   if (!socket) return <div>Connecting...</div>;
 
   return (
-    <div className="min-h-screen bg-[#030611] text-white">
+    <div className="min-h-screen bg-[#030611] text-white relative overflow-hidden selection:bg-amber-500/30 selection:text-white">
+      {/* Background glowing orbs */}
+      <div className="absolute top-[-200px] left-[10%] w-[700px] h-[700px] rounded-full bg-amber-500/[0.05] blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute bottom-[15%] right-[5%] w-[600px] h-[600px] rounded-full bg-sky-500/[0.04] blur-[130px] pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full bg-purple-500/[0.03] blur-[100px] pointer-events-none -z-10" />
+      <div
+        className="absolute inset-0 opacity-[0.2] -z-20"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(148,163,184,0.12) 1px, transparent 0)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+
       {result && (
         <GameEndModal
           blackPlayer={gameMetadata?.blackPlayer}
           whitePlayer={gameMetadata?.whitePlayer}
           gameResult={result}
-        ></GameEndModal>
+          onClose={() => {
+            setResult(null);
+            navigate('/dashboard');
+          }}
+        />
       )}
-      {started && (
-        <div className="justify-center flex pt-4">
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 w-fit">
-            {(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
+
+      {/* Turn Indicator */}
+      <div className="w-full flex justify-center pt-6 mb-2">
+        {started ? (
+          <div className="flex items-center gap-2 px-6 py-2 rounded-full bg-slate-900/80 border border-slate-800 shadow-lg backdrop-blur-md transition-all">
+            <div className={`w-2.5 h-2.5 rounded-full ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`} />
+            <span className={`text-sm font-bold tracking-wide ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'text-amber-400' : 'text-slate-400'}`}>
+              {(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
+            </span>
           </div>
-        </div>
-      )}
-      <div className="justify-center flex">
-        <div className="pt-2 w-full">
-          <div className="flex gap-6 w-full items-start">
-            <div className="flex-1">
-              <div className="flex justify-center">
-                <div>
-                  {started && (
-                    <div className="mb-4">
-                      <div className="flex justify-between">
-                        <UserAvatar gameMetadata={gameMetadata} />
-                        {getTimer(
-                          user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  <div>
-                    <div className={`w-full flex justify-center text-white`}>
-                      <ChessBoard
-                        started={started}
-                        gameId={gameId ?? ''}
-                        myColor={user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w'}
-                        chess={chess}
-                        setBoard={setBoard}
-                        socket={socket}
-                        board={board}
-                      />
-                    </div>
-                  </div>
-                  {started && (
-                    <div className="mt-4 flex justify-between">
-                      <UserAvatar gameMetadata={gameMetadata} self />
-                      {getTimer(user?.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
-                    </div>
-                  )}
-                </div>
+        ) : (
+          <div className="h-10"></div>
+        )}
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pb-12 w-full">
+        <div className="flex flex-col lg:flex-row gap-8 w-full items-center lg:items-start">
+          
+          {/* Main Board Area */}
+          <div className="flex-1 w-full max-w-[600px] mx-auto lg:mx-0 flex flex-col gap-4">
+            {started && (
+              <div className="flex items-center justify-between bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 rounded-2xl p-3 shadow-lg">
+                <UserAvatar gameMetadata={gameMetadata} />
+                {getTimer(user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
               </div>
+            )}
+            
+            <div className="w-full rounded-xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800/50">
+              <ChessBoard
+                started={started}
+                gameId={gameId ?? ''}
+                myColor={user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w'}
+                chess={chess}
+                setBoard={setBoard}
+                socket={socket}
+                board={board}
+              />
             </div>
-            <div className="rounded-2xl pt-2 bg-slate-900/60 border border-slate-800 w-[340px] shrink-0 overflow-auto h-[95vh] no-scrollbar">
+
+            {started && (
+              <div className="flex items-center justify-between bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 rounded-2xl p-3 shadow-lg">
+                <UserAvatar gameMetadata={gameMetadata} self />
+                {getTimer(user?.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+              </div>
+            )}
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="w-full lg:w-[380px] shrink-0 flex flex-col gap-4">
+            <div className="rounded-2xl bg-slate-950/60 border border-slate-800 shadow-xl backdrop-blur-md overflow-hidden flex flex-col h-[500px] lg:h-[calc(100vh-140px)] min-h-[500px]">
+              
               {!started ? (
-                <div className="pt-8 flex justify-center w-full">
+                <div className="flex-1 flex flex-col items-center justify-center p-8">
                   {added ? (
-                    <div className="flex flex-col items-center space-y-6 justify-center w-full px-6">
+                    <div className="flex flex-col items-center space-y-8 w-full">
                       <Waitopponent />
-                      <ShareGame gameId={gameID} />
+                      <div className="w-full pt-4 border-t border-slate-800">
+                        <ShareGame gameId={gameID} />
+                      </div>
                     </div>
                   ) : (
                     gameId === 'random' && (
-                      <div className="flex flex-col items-center gap-4 w-full px-6">
-                        <p className="text-slate-400 text-sm text-center">Start a new random match online</p>
+                      <div className="flex flex-col items-center gap-6 w-full text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-white font-serif mb-2">Quick Match</h2>
+                          <p className="text-slate-400 text-sm max-w-[250px]">
+                            Get matched instantly with a player of your skill level from around the world.
+                          </p>
+                        </div>
                         <button
                           onClick={() => {
                             socket.send(
@@ -318,24 +353,31 @@ export const Game = () => {
                               })
                             );
                           }}
-                          className="px-8 py-4 text-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 w-full"
+                          className="mt-4 px-8 py-4 text-base bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 w-full hover:scale-[1.02] active:scale-[0.98]"
                         >
-                          Play Now
+                          Find Opponent
                         </button>
                       </div>
                     )
                   )}
                 </div>
               ) : (
-                <div className="p-6 flex justify-center w-full">
-                  <ExitGameModel onClick={() => handleExit()} />
-                </div>
+                <>
+                  <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center shrink-0">
+                    <h3 className="font-bold text-slate-200 tracking-wide">Match Log</h3>
+                    <ExitGameModel onClick={() => handleExit()} />
+                  </div>
+                  <div className="flex-1 overflow-hidden relative">
+                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-2">
+                      <MovesTable setResult={setResult} />
+                    </div>
+                  </div>
+                </>
               )}
-              <div>
-                <MovesTable />
-              </div>
+
             </div>
           </div>
+          
         </div>
       </div>
     </div>

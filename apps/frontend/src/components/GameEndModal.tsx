@@ -7,17 +7,22 @@ interface ModalProps {
   blackPlayer?: { id: string; name: string };
   whitePlayer?: { id: string; name: string };
   gameResult: GameResult;
+  onClose?: () => void;
 }
 
 const GameEndModal: React.FC<ModalProps> = ({
   blackPlayer,
   whitePlayer,
   gameResult,
+  onClose,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const closeModal = () => {
     setIsOpen(false);
+    if (onClose) {
+      onClose();
+    }
   };
 
   const PlayerDisplay = ({
