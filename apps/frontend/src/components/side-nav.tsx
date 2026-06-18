@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { type LucideIcon } from 'lucide-react';
-import { useUser } from '@repo/store/useUser';
+import { useUserStore } from '@repo/store/useUser';
 
 export interface NavItem {
   title: string;
