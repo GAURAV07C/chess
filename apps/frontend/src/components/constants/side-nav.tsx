@@ -1,4 +1,4 @@
-import { PuzzleIcon, LogInIcon, LogOutIcon, SettingsIcon, LayoutDashboard, UserRound } from 'lucide-react';
+import { PuzzleIcon, LogInIcon, LogOutIcon, LayoutDashboard, UserRound } from 'lucide-react';
 const BACKEND_URL =
   import.meta.env.VITE_APP_BACKEND_URL ?? 'http://localhost:3000';
 export const UpperNavItems = [
@@ -46,11 +46,5 @@ export const LowerNavItems = [
     icon: LogOutIcon,
     href: `${BACKEND_URL}/auth/logout`,
     color: 'text-rose-500',
-  },
-  {
-    title: 'Settings',
-    icon: SettingsIcon,
-    href: '/settings',
-    color: 'text-green-500',
   },
 ];

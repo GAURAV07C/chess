@@ -1,11 +1,5 @@
-import {
-  isBoardFlippedAtom,
-  movesAtom,
-  userSelectedMoveIndexAtom,
-} from '@repo/store/chessBoard';
 import { Move } from 'chess.js';
 import { useEffect, useRef } from 'react';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import {
   HandshakeIcon,
   FlagIcon,
@@ -15,13 +9,15 @@ import {
   ChevronRight,
   RefreshCw,
 } from 'lucide-react';
+import { useChessBoardStore } from '@repo/store/chessBoard';
 
 const MovesTable = () => {
-  const [userSelectedMoveIndex, setUserSelectedMoveIndex] = useRecoilState(
-    userSelectedMoveIndexAtom,
-  );
-  const setIsFlipped = useSetRecoilState(isBoardFlippedAtom);
-  const moves = useRecoilValue(movesAtom);
+  const userSelectedMoveIndex = useChessBoardStore((state) => state.userSelectedMoveIndex);
+  const setUserSelectedMoveIndex = useChessBoardStore((state) => state.setUserSelectedMoveIndex);
+  const toggleBoardFlipped = useChessBoardStore((state) => state.toggleBoardFlipped);
+  const incrementUserSelectedMoveIndex = useChessBoardStore((state) => state.incrementUserSelectedMoveIndex);
+  const decrementUserSelectedMoveIndex = useChessBoardStore((state) => state.decrementUserSelectedMoveIndex);
+  const moves = useChessBoardStore((state) => state.moves);
   const movesTableRef = useRef<HTMLInputElement>(null);
   const movesArray = moves.reduce((result, _, index: number, array: Move[]) => {
     if (index % 2 === 0) {
@@ -106,9 +102,7 @@ const MovesTable = () => {
 
             <button
               onClick={() => {
-                setUserSelectedMoveIndex((prev) =>
-                  prev !== null ? prev - 1 : moves.length - 2,
-                );
+                decrementUserSelectedMoveIndex();
               }}
               disabled={userSelectedMoveIndex === 0}
               className="hover:text-white"
@@ -117,13 +111,7 @@ const MovesTable = () => {
             </button>
             <button
               onClick={() => {
-                setUserSelectedMoveIndex((prev) =>
-                  prev !== null
-                    ? prev + 1 >= moves.length - 1
-                      ? moves.length - 1
-                      : prev + 1
-                    : null,
-                );
+                incrementUserSelectedMoveIndex();
               }}
               disabled={userSelectedMoveIndex === null}
               className="hover:text-white"
@@ -142,7 +130,7 @@ const MovesTable = () => {
             </button>
             <button
               onClick={() => {
-                setIsFlipped((prev) => !prev);
+                toggleBoardFlipped();
               }}
               title="Flip the board"
             >

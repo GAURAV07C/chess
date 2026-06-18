@@ -2,13 +2,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useState } from 'react';
 import MoveSound from '/move.wav';
-import { Button } from '../components/Button';
-import { ChessBoard, isPromoting } from '../components/ChessBoard';
+import { ChessBoard } from '../components/ChessBoard';
+import { isPromoting } from '@/utils/chessHelpers';
 import { useSocket } from '../hooks/useSocket';
 import { Chess, Move } from 'chess.js';
 import { useNavigate, useParams } from 'react-router-dom';
 import MovesTable from '../components/MovesTable';
 import { useUser } from '@repo/store/useUser';
+import { useChessBoardStore } from '@repo/store/chessBoard';
 import { UserAvatar } from '../components/UserAvatar';
 
 // TODO: Move together, there's code repetition here
@@ -41,9 +42,7 @@ export interface Player {
   name: string;
   isGuest: boolean;
 }
-import { useRecoilValue, useSetRecoilState } from 'recoil';
 
-import { movesAtom, userSelectedMoveIndexAtom } from '@repo/store/chessBoard';
 import GameEndModal from '@/components/GameEndModal';
 import { Waitopponent } from '@/components/ui/waitopponent';
 import { ShareGame } from '../components/ShareGame';
@@ -72,8 +71,8 @@ export const Game = () => {
   const [player1TimeConsumed, setPlayer1TimeConsumed] = useState(0);
   const [player2TimeConsumed, setPlayer2TimeConsumed] = useState(0);
   const [gameID, setGameID] = useState('');
-  const setMoves = useSetRecoilState(movesAtom);
-  const userSelectedMoveIndex = useRecoilValue(userSelectedMoveIndexAtom);
+  const setMoves = useChessBoardStore((state) => state.setMoves);
+  const userSelectedMoveIndex = useChessBoardStore((state) => state.userSelectedMoveIndex);
   const userSelectedMoveIndexRef = useRef(userSelectedMoveIndex);
 
   useEffect(() => {
@@ -257,7 +256,7 @@ export const Game = () => {
       {started && (
         <div className="justify-center flex pt-4">
           <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 w-fit">
-            {(user.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
+            {(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'Your turn' : "Opponent's turn"}
           </div>
         </div>
       )}
@@ -272,7 +271,7 @@ export const Game = () => {
                       <div className="flex justify-between">
                         <UserAvatar gameMetadata={gameMetadata} />
                         {getTimer(
-                          user.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed
+                          user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed
                         )}
                       </div>
                     </div>
@@ -282,7 +281,7 @@ export const Game = () => {
                       <ChessBoard
                         started={started}
                         gameId={gameId ?? ''}
-                        myColor={user.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w'}
+                        myColor={user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w'}
                         chess={chess}
                         setBoard={setBoard}
                         socket={socket}
@@ -293,7 +292,7 @@ export const Game = () => {
                   {started && (
                     <div className="mt-4 flex justify-between">
                       <UserAvatar gameMetadata={gameMetadata} self />
-                      {getTimer(user.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+                      {getTimer(user?.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
                     </div>
                   )}
                 </div>

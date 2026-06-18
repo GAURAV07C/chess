@@ -1,5 +1,5 @@
 import { Chess, Color, Move, PieceSymbol, Square } from 'chess.js';
-import { MouseEvent, memo, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState,  } from 'react';
 import { MOVE } from '../screens/Game';
 import LetterNotation from './chess-board/LetterNotation';
 import LegalMoveIndicator from './chess-board/LegalMoveIndicator';
@@ -10,9 +10,9 @@ import Confetti from 'react-confetti';
 import MoveSound from '/move.wav';
 import CaptureSound from '/capture.wav';
 
-import { useRecoilState } from 'recoil';
-
-import { isBoardFlippedAtom, movesAtom, userSelectedMoveIndexAtom } from '@repo/store/chessBoard';
+import { useChessBoardStore } from '@repo/store/chessBoard';
+import { useThemeContext } from '@/hooks/useThemes';
+import { THEMES_DATA } from '@/constants/themes';
 
 export function isPromoting(chess: Chess, from: Square, to: Square) {
   if (!from) {
@@ -36,11 +36,11 @@ export function isPromoting(chess: Chess, from: Square, to: Square) {
   return chess
     .history({ verbose: true })
     .map((it) => it.to)
-    .includes(to);
+  .includes(to);
 }
 
-export const ChessBoard = memo(
-  ({
+export const ChessBoard = (
+  {
     gameId,
     started,
     myColor,
@@ -71,9 +71,15 @@ export const ChessBoard = memo(
   }) => {
     console.log('chessboard reloaded');
 
-    const [isFlipped, setIsFlipped] = useRecoilState(isBoardFlippedAtom);
-    const [userSelectedMoveIndex, setUserSelectedMoveIndex] = useRecoilState(userSelectedMoveIndexAtom);
-    const [moves, setMoves] = useRecoilState(movesAtom);
+    const { currentTheme } = useThemeContext();
+    const themeName = currentTheme?.name;
+    const themeMeta = THEMES_DATA.find((t) => t.name === themeName) || THEMES_DATA[0];
+    const themeDark = themeMeta.darkSquare.split(' ')[0] || 'bg-boardDark';
+    const themeLight = themeMeta.lightSquare.split(' ')[0] || 'bg-boardLight';
+
+    const [isFlipped, setIsFlipped] = [useChessBoardStore((state) => state.isBoardFlipped), useChessBoardStore((state) => state.setIsBoardFlipped)];
+    const [userSelectedMoveIndex, setUserSelectedMoveIndex] = [useChessBoardStore((state) => state.userSelectedMoveIndex), useChessBoardStore((state) => state.setUserSelectedMoveIndex)];
+    const [moves, setMoves] = [useChessBoardStore((state) => state.moves), useChessBoardStore((state) => state.setMoves)];
     const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
     const [rightClickedSquares, setRightClickedSquares] = useState<string[]>([]);
     const [arrowStart, setArrowStart] = useState<string | null>(null);
@@ -100,15 +106,15 @@ export const ChessBoard = memo(
       if (myColor === 'b') {
         setIsFlipped(true);
       }
-    }, [myColor]);
+    }, [myColor, setIsFlipped]);
 
-    const clearCanvas = () => {
+    const clearCanvas = useCallback(() => {
       setRightClickedSquares([]);
       if (canvas) {
         const ctx = canvas.getContext('2d');
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
       }
-    };
+    }, [canvas, setRightClickedSquares]);
 
     const handleRightClick = (squareRep: string) => {
       if (rightClickedSquares.includes(squareRep)) {
@@ -155,7 +161,7 @@ export const ChessBoard = memo(
 
     useEffect(() => {
       clearCanvas();
-      const lMove = moves.at(-1);
+      const lMove = moves.length > 0 ? moves[moves.length - 1] : undefined;
       if (lMove) {
         setLastMove({
           from: lMove.from,
@@ -310,7 +316,7 @@ export const ChessBoard = memo(
                           height: boxSize,
                         }}
                         key={j}
-                        className={`${isRightClickedSquare ? (isMainBoxColor ? 'bg-[#CF664E]' : 'bg-[#E87764]') : isKingInCheckSquare ? 'bg-[#FF6347]' : isHighlightedSquare ? `${isMainBoxColor ? 'bg-[#BBCB45]' : 'bg-[#F4F687]'}` : isMainBoxColor ? 'bg-boardDark' : 'bg-boardLight'} ${''}`}
+                        className={`${isRightClickedSquare ? (isMainBoxColor ? 'bg-[#CF664E]' : 'bg-[#E87764]') : isKingInCheckSquare ? 'bg-[#FF6347]' : isHighlightedSquare ? `${isMainBoxColor ? 'bg-[#BBCB45]' : 'bg-[#F4F687]'}` : isMainBoxColor ? themeDark : themeLight} ${''}`}
                         onContextMenu={(e) => {
                           e.preventDefault();
                         }}
@@ -358,4 +364,3 @@ export const ChessBoard = memo(
       </>
     );
   }
-);

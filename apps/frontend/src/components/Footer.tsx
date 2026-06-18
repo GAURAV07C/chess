@@ -1,6 +1,5 @@
 import {
   GitHubLogoIcon,
-  VideoIcon,
   TwitterLogoIcon,
 } from '@radix-ui/react-icons';
 import { Link } from 'react-router-dom';

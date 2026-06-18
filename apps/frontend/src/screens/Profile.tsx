@@ -6,12 +6,16 @@ import {
   Flame,
   Target,
   LogOut,
-  Settings2,
   Gamepad2,
   Crown,
+  Palette,
+  ArrowLeft,
 } from 'lucide-react';
-import { useRecoilValue } from 'recoil';
-import { userAtom, BACKEND_URL } from '@repo/store/userAtom';
+import { useUserStore } from '@repo/store/userAtom';
+import { useThemeContext } from '@/hooks/useThemes';
+import { THEMES_DATA } from '@/constants/themes';
+
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL ?? 'http://localhost:3000';
 
 const PROFILE_API = `${BACKEND_URL}/v1/profile/me`;
 
@@ -52,7 +56,7 @@ type ProfileResponse = {
 
 export const Profile = () => {
   const navigate = useNavigate();
-  const user = useRecoilValue(userAtom);
+  const user = useUserStore((state) => state.user);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +124,7 @@ export const Profile = () => {
   }
 
   const { stats, currentWinStreak, recentGames } = profile;
+  const { updateTheme, theme: activeTheme } = useThemeContext();
 
   return (
     <div className="min-h-screen bg-[#030611] text-white relative overflow-hidden">
@@ -131,9 +136,16 @@ export const Profile = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          className="flex flex-col md:flex-row md:items-center gap-4"
         >
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
+              title="Go back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
             <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-slate-950 text-2xl font-serif font-black">
               {profile.user.name?.charAt(0).toUpperCase() || 'P'}
             </div>
@@ -150,13 +162,6 @@ export const Profile = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/settings')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
-            >
-              <Settings2 className="w-4 h-4" />
-              Settings
-            </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
@@ -209,6 +214,39 @@ export const Profile = () => {
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
             <p className="text-xs uppercase tracking-widest text-amber-400">Draws</p>
             <p className="text-xl font-bold text-white mt-1">{stats.draws}</p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-3"
+        >
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4 text-slate-300" />
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Theme</h3>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {THEMES_DATA.map((theme) => {
+              const isActive = activeTheme === theme.name;
+              return (
+                <button
+                  key={theme.id}
+                  onClick={() => updateTheme(theme.name)}
+                  className={`group relative rounded-2xl border p-3 text-left transition-all hover:scale-[1.03] focus:outline-none ${
+                    isActive ? 'border-white/80 bg-white/10 ring-1 ring-white/60' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                  }`}
+                >
+                  <div
+                    className="h-10 w-10 rounded-lg border border-slate-800 shadow-sm"
+                    style={{ backgroundColor: theme.accentColor }}
+                  />
+                  <p className={`mt-3 text-xs font-bold transition-colors ${
+                    isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
+                  }`}>{theme.name}</p>
+                </button>
+              );
+            })}
           </div>
         </motion.div>
 

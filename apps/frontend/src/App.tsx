@@ -1,4 +1,3 @@
-import { RecoilRoot } from 'recoil';
 import { Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Landing } from './screens/Landing';
@@ -18,13 +17,11 @@ import "./themes.css";
 export default function App() {
   return (
     <div className="min-h-screen bg-bgMain text-textMain">
-      <RecoilRoot>
-        <Suspense fallback={<Loader />}>
+      <Suspense fallback={<Loader />}>
           <ThemesProvider>
             <AuthApp />
           </ThemesProvider>
         </Suspense>
-      </RecoilRoot>
     </div>
   );
 }

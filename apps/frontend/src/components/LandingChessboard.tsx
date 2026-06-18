@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChessPiece } from '@/types/chess-landing';
 import { THEME_DATA } from '@/constants/themes';
-import { Play, RotateCcw, Award, Trophy, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { RotateCcw, Award, Trophy, Volume2, VolumeX, Sparkles } from 'lucide-react';
 
 interface LandingChessboardProps {
   theme: THEME_DATA;

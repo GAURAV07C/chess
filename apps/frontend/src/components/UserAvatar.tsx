@@ -8,11 +8,13 @@ interface UserAvatarProps {
 
 export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
   const user = useUser();
+  if (!gameMetadata) return null;
+  
   let player: Player;
-  if (gameMetadata?.blackPlayer.id === user.id) {
+  if (gameMetadata.blackPlayer.id === user?.id) {
     player = self ? gameMetadata.blackPlayer : gameMetadata.whitePlayer;
   } else {
-    player = self ? gameMetadata?.whitePlayer! : gameMetadata?.blackPlayer!;
+    player = self ? gameMetadata.whitePlayer : gameMetadata.blackPlayer;
   }
 
   return (

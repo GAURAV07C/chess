@@ -4,14 +4,14 @@
   "description": "",
   "main": "index.js",
   "exports": {
-    "./useUser": "./src/hooks/useUser.ts",
-    "./userAtom": "./src/atoms/user.ts",
-    "./chessBoard": "./src/atoms/chessBoard.ts"
+    "./useUser": "./src/useUser.ts",
+    "./userAtom": "./src/userAtom.ts",
+    "./chessBoard": "./src/chessBoard.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "recoil": "^0.7.7"
+    "zustand": "^4.5.7"
   }
 }

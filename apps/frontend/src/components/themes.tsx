@@ -9,10 +9,10 @@ export function Themes() {
         {
           THEMES_DATA.map(theme => {
             return (
-              <div 
-                key={theme.id} 
-                className="p-4 flex items-start justify-between cursor-pointer" 
-                style={{backgroundColor: theme.background}}
+              <div
+                key={theme.id}
+                className="p-4 flex items-start justify-between cursor-pointer"
+                style={{ backgroundColor: theme.boardBg }}
                 onClick={() => {
                   updateTheme(theme.name);
                 }}
@@ -21,29 +21,29 @@ export function Themes() {
                   <h2 className="text-lg capitalize">{theme.name}</h2>
                 </div>
                 <div className="grid grid-cols-2">
-                  <img 
-                    src="/bk.png" 
-                    className="w-16 h-16" 
-                    alt="chess-piece"
-                    style={{backgroundColor: theme["board-dark"]}}
-                  />
-                  <img 
-                    src="/wn.png" 
-                    className="w-16 h-16" 
-                    alt="chess-piece" 
-                    style={{backgroundColor: theme["board-light"]}}
-                  />
-                  <img 
-                    src="/br.png" 
-                    className="w-16 h-16" 
-                    alt="chess-piece"
-                    style={{backgroundColor: theme["board-light"]}}
-                  />
-                  <img 
-                    src="/wp.png" 
+                  <img
+                    src="/bk.png"
                     className="w-16 h-16"
                     alt="chess-piece"
-                    style={{backgroundColor: theme["board-dark"]}}
+                    style={{ backgroundColor: theme.darkSquare }}
+                  />
+                  <img
+                    src="/wn.png"
+                    className="w-16 h-16"
+                    alt="chess-piece"
+                    style={{ backgroundColor: theme.lightSquare }}
+                  />
+                  <img
+                    src="/br.png"
+                    className="w-16 h-16"
+                    alt="chess-piece"
+                    style={{ backgroundColor: theme.lightSquare }}
+                  />
+                  <img
+                    src="/wp.png"
+                    className="w-16 h-16"
+                    alt="chess-piece"
+                    style={{ backgroundColor: theme.darkSquare }}
                   />
                 </div>
               </div>

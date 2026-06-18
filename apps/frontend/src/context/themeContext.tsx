@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { THEMES_DATA, THEME_DATA } from "@/constants/themes";
 
 export type THEME = 'Classic Walnut' | 'Midnight Cyber' | 'Emerald Tournament' | 'Nordic Frost' | 'Bubblegum Queen';
