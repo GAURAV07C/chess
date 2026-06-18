@@ -1,6 +1,13 @@
+import dotenv from 'dotenv';
+import path from 'path';
 import { WebSocketServer } from 'ws';
+
+// Resolve .env from the project root (three levels up from dist)
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+console.log('🔐 WS JWT_SECRET loaded:', process.env.JWT_SECRET);
+
 import { GameManager } from './GameManager';
-import url from 'url';
+
 import { extractAuthUser } from './auth';
 
 const wss = new WebSocketServer({ port: 8080 });
@@ -8,8 +15,17 @@ const wss = new WebSocketServer({ port: 8080 });
 const gameManager = new GameManager();
 
 wss.on('connection', function connection(ws, req) {
-  //@ts-ignore
-  const token: string = url.parse(req.url, true).query.token;
+  const token = (() => {
+    try {
+      // req.url may be a relative URL; construct a base to use WHATWG URL API
+      const base = `http://localhost:${wss.options?.port ?? 8080}`;
+      const urlObj = new URL(req.url ?? '', base);
+      return urlObj.searchParams.get('token') ?? '';
+    } catch (e) {
+      console.error('🔧 URL parsing error:', e);
+      return '';
+    }
+  })();
   const user = extractAuthUser(token, ws);
   gameManager.addUser(user);
 

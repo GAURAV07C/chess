@@ -4,6 +4,7 @@ import cors from 'cors';
 import { initPassport } from './passport';
 import authRoute from './router/auth';
 import profileRoute from './router/profile';
+import path from 'path';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';

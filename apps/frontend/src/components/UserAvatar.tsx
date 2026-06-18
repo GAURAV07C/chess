@@ -1,5 +1,5 @@
 import { useUser } from '@repo/store/useUser';
-import { Metadata, Player } from '../screens/Game';
+import { Metadata, Player } from '../screens/gameConstants';
 
 interface UserAvatarProps {
   gameMetadata: Metadata | null;
