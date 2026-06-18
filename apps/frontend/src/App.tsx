@@ -13,15 +13,21 @@ import { Layout } from './layout';
 
 import "./App.css";
 import "./themes.css";
+import { FriendMatch } from './screens/FriendMatch';
+import { LocalPlay } from './screens/LocalPlay';
+import { BotPlay } from './screens/BotPlay';
+import { PuzzleRush } from './screens/PuzzleRush';
+import { Leaderboard } from './screens/Leaderboard';
+import Tournaments from './screens/Tournaments';
 
 export default function App() {
   return (
     <div className="min-h-screen bg-bgMain text-textMain">
       <Suspense fallback={<Loader />}>
-          <ThemesProvider>
-            <AuthApp />
-          </ThemesProvider>
-        </Suspense>
+        <ThemesProvider>
+          <AuthApp />
+        </ThemesProvider>
+      </Suspense>
     </div>
   );
 }
@@ -43,7 +49,31 @@ function AuthApp() {
           element={<Layout><Game /></Layout>}
         />
         <Route
-          path='/settings'
+          path="/game/friend/:inviteId?"
+          element={<Layout><FriendMatch /></Layout>}
+        />
+        <Route
+          path="/game/local"
+          element={<Layout><LocalPlay /></Layout>}
+        />
+        <Route
+          path="/game/bot"
+          element={<Layout><BotPlay /></Layout>}
+        />
+        <Route
+          path="/puzzle"
+          element={<Layout><PuzzleRush /></Layout>}
+        />
+        <Route
+          path="/leaderboard"
+          element={<Layout><Leaderboard /></Layout>}
+        />
+        <Route
+          path="/tournaments"
+          element={<Layout><Tournaments /></Layout>}
+        />
+        <Route
+          path="/settings"
           element={<Layout><Settings /></Layout>}
         >
           <Route path="themes" element={<Themes />} />

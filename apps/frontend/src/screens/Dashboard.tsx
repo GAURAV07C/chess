@@ -74,7 +74,7 @@ const MODES = [
     desc: 'Share a link and challenge',
     accent: 'from-sky-500 to-blue-600',
     glow: 'bg-sky-500',
-    href: null,
+    href: '/game/friend',
   },
   {
     id: 'bot',
@@ -83,7 +83,7 @@ const MODES = [
     desc: 'Train against the engine',
     accent: 'from-emerald-500 to-teal-600',
     glow: 'bg-emerald-500',
-    href: null,
+    href: '/game/bot',
   },
   {
     id: 'puzzle',
@@ -92,7 +92,7 @@ const MODES = [
     desc: 'Solve tactical sequences',
     accent: 'from-purple-500 to-pink-600',
     glow: 'bg-purple-500',
-    href: null,
+    href: '/puzzle',
   },
   {
     id: 'leaderboard',
@@ -101,7 +101,7 @@ const MODES = [
     desc: 'Top challengers this week',
     accent: 'from-rose-500 to-red-600',
     glow: 'bg-rose-500',
-    href: null,
+    href: '/leaderboard',
   },
   {
     id: 'tournament',
@@ -110,7 +110,7 @@ const MODES = [
     desc: 'Compete for the crown',
     accent: 'from-yellow-500 to-amber-600',
     glow: 'bg-yellow-500',
-    href: null,
+    href: '/tournaments',
   },
 ];
 const dailyPuzzle = {
