@@ -1,5 +1,5 @@
 import { Chess, Move, Square } from 'chess.js';
-import { GAME_ENDED, INIT_GAME, MOVE } from './messages';
+import { GAME_ENDED, GAME_TIME, INIT_GAME, MOVE } from './messages';
 import { db } from './db';
 import { randomUUID } from 'crypto';
 import { socketManager, User } from './SocketManager';
@@ -8,7 +8,7 @@ import AuthProvider from '@prisma/client';
 type GAME_STATUS = 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED' | 'TIME_UP' | 'PLAYER_EXIT';
 type GAME_RESULT = 'WHITE_WINS' | 'BLACK_WINS' | 'DRAW';
 
-const GAME_TIME_MS = 10 * 60 * 60 * 1000;
+const GAME_TIME_MS = 10 * 60 * 1000;
 
 export function isPromoting(chess: Chess, from: Square, to: Square) {
   if (!from) {
@@ -35,15 +35,14 @@ export function isPromoting(chess: Chess, from: Square, to: Square) {
     .includes(to);
 }
 
+/* global NodeJS */
 export class Game {
   public gameId: string;
   public player1UserId: string;
   public player2UserId: string | null;
   public board: Chess;
   private moveCount = 0;
-  // eslint-disable-next-line no-undef
   private timer: NodeJS.Timeout | null = null;
-  // eslint-disable-next-line no-undef
   private moveTimer: NodeJS.Timeout | null = null;
   public result: GAME_RESULT | null = null;
   private player1TimeConsumed = 0;
@@ -105,6 +104,7 @@ export class Game {
     this.resetAbandonTimer();
     this.resetMoveTimer();
   }
+
   async updateSecondPlayer(player2UserId: string) {
     this.player2UserId = player2UserId;
 
@@ -147,6 +147,7 @@ export class Game {
         },
       })
     );
+    this.startPeriodicTimerBroadcast();
   }
 
   async createGameInDb() {
@@ -263,7 +264,7 @@ export class Game {
 
     if (this.board.isGameOver()) {
       const result = this.board.isDraw() ? 'DRAW' : this.board.turn() === 'b' ? 'WHITE_WINS' : 'BLACK_WINS';
-
+      this.result = result;
       this.endGame('COMPLETED', result);
     }
 
@@ -297,6 +298,7 @@ export class Game {
     if (this.moveTimer) {
       clearTimeout(this.moveTimer);
     }
+    this.broadcastTime();
     const turn = this.board.turn();
     const timeLeft = GAME_TIME_MS - (turn === 'w' ? this.player1TimeConsumed : this.player2TimeConsumed);
 
@@ -305,15 +307,44 @@ export class Game {
     }, timeLeft);
   }
 
+  private timeInterval: ReturnType<typeof setInterval> | null = null;
+
+  startPeriodicTimerBroadcast() {
+    if (this.timeInterval) clearInterval(this.timeInterval);
+    this.timeInterval = setInterval(() => {
+      this.broadcastTime();
+    }, 1000);
+  }
+
+  stopPeriodicTimerBroadcast() {
+    if (this.timeInterval) clearInterval(this.timeInterval);
+    this.timeInterval = null;
+  }
+
+  async broadcastTime() {
+    socketManager.broadcast(
+      this.gameId,
+      JSON.stringify({
+        type: GAME_TIME,
+        payload: {
+          player1Time: this.getPlayer1TimeConsumed(),
+          player2Time: this.getPlayer2TimeConsumed(),
+        },
+      })
+    );
+  }
+
   async exitGame(user: User) {
     this.endGame('PLAYER_EXIT', user.userId === this.player2UserId ? 'WHITE_WINS' : 'BLACK_WINS');
   }
 
   async endGame(status: GAME_STATUS, result: GAME_RESULT) {
+    this.result = result;
     const updatedGame = await db.game.update({
       data: {
         status,
         result: result,
+        endAt: new Date(),
       },
       where: {
         id: this.gameId,
@@ -350,6 +381,7 @@ export class Game {
     );
     this.clearTimer();
     this.clearMoveTimer();
+    this.stopPeriodicTimerBroadcast();
   }
 
   clearMoveTimer() {

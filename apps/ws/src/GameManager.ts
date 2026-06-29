@@ -1,11 +1,10 @@
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import {
-  GAME_OVER,
+  BOT_JOIN,
   INIT_GAME,
   MOVE,
   OPPONENT_DISCONNECTED,
-  JOIN_GAME,
   JOIN_ROOM,
   GAME_JOINED,
   GAME_NOT_FOUND,
@@ -14,11 +13,11 @@ import {
   GAME_ENDED,
   EXIT_GAME,
 } from './messages';
-import { Game, isPromoting } from './Game';
+import { Game } from './Game';
 import { db } from './db';
 import { socketManager, User } from './SocketManager';
-import { Square } from 'chess.js';
 import { GameStatus } from '@prisma/client';
+import { Move } from 'chess.js';
 
 export class GameManager {
   private games: Game[];
@@ -44,6 +43,17 @@ export class GameManager {
     }
     this.users = this.users.filter((user) => user.socket !== socket);
     socketManager.removeUser(user);
+
+    const game = this.games.find((g) => g.player1UserId === user.userId || g.player2UserId === user.userId);
+    if (game && game.result === null) {
+      socketManager.broadcast(
+        game.gameId,
+        JSON.stringify({
+          type: OPPONENT_DISCONNECTED,
+          payload: { message: 'Opponent disconnected' },
+        })
+      );
+    }
   }
 
   removeGame(gameId: string) {
@@ -80,6 +90,19 @@ export class GameManager {
         if (game) {
           game.exitGame(user);
           this.removeGame(game.gameId);
+        }
+      }
+
+      if (message.type === BOT_JOIN) {
+        const gameId = message.payload?.gameId;
+        await this.handleBotGame(user, gameId);
+      }
+
+      if (message.type === OPPONENT_DISCONNECTED) {
+        const gameId = message.payload?.gameId;
+        const game = this.games.find((game) => game.gameId === gameId);
+        if (game && game.result === null) {
+          game.endGame('ABANDONED', user.userId === game.player1UserId ? 'BLACK_WINS' : 'WHITE_WINS');
         }
       }
 
@@ -214,6 +237,15 @@ export class GameManager {
               },
             })
           );
+          if (game.player2UserId !== user.userId) {
+            socketManager.broadcast(
+              game.gameId,
+              JSON.stringify({
+                type: GAME_ALERT,
+                payload: { message: 'Your friend joined the game!' },
+              })
+            );
+          }
         } else {
           user.socket.send(JSON.stringify({ type: GAME_NOT_FOUND }));
         }
@@ -319,5 +351,66 @@ export class GameManager {
     socketManager.addUser(user, game.gameId);
     await game.updateSecondPlayer(user.userId);
     this.pendingGameId = null;
+  }
+
+  private async handleBotGame(user: User, gameId: string) {
+    const botUserId = 'bot-player-id';
+
+    const botUser: User = {
+      socket: {} as WebSocket,
+      id: randomUUID(),
+      userId: botUserId,
+      name: 'ChessBot',
+      isGuest: true,
+    } as User;
+
+    const game = new Game(user.userId, null, gameId);
+    this.games.push(game);
+    socketManager.addUser(user, game.gameId);
+
+    const WhitePlayer = await db.user.findUnique({
+      where: { id: user.userId },
+    });
+
+    socketManager.broadcast(
+      game.gameId,
+      JSON.stringify({
+        type: INIT_GAME,
+        payload: {
+          gameId: game.gameId,
+          whitePlayer: {
+            name: WhitePlayer?.name,
+            id: user.userId,
+            isGuest: WhitePlayer?.provider === 'GUEST',
+          },
+          blackPlayer: {
+            name: 'ChessBot',
+            id: botUserId,
+            isGuest: false,
+          },
+          fen: game.board.fen(),
+          moves: [],
+        },
+      })
+    );
+
+    await game.updateSecondPlayer(botUserId);
+    game.startPeriodicTimerBroadcast();
+
+    setInterval(() => {
+      if (!game.result) {
+        this.makeBotMove(game, botUser);
+      }
+    }, 2000);
+  }
+
+  private async makeBotMove(game: Game, botUser: User) {
+    const moves = game.board.moves();
+    if (moves.length === 0 || game.result) return;
+
+    const randomMove = moves[Math.floor(Math.random() * moves.length)];
+    const botMove = { from: randomMove.slice(0, 2), to: randomMove.slice(2, 4) };
+
+    await game.makeMove(botUser, botMove as Move);
   }
 }

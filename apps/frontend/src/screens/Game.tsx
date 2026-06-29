@@ -13,7 +13,6 @@ import { useUser } from '@repo/store/useUser';
 import { useChessBoardStore } from '@repo/store/chessBoard';
 import { UserAvatar } from '../components/UserAvatar';
 
-// TODO: Move together, there's code repetition here
 export const INIT_GAME = 'init_game';
 export const MOVE = 'move';
 export const OPPONENT_DISCONNECTED = 'opponent_disconnected';

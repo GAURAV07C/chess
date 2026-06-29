@@ -1,10 +1,12 @@
 # Chess
+
 ## Documentation
 
 For a detailed overview of the project architecture, system design, WebSocket flow, database schema, and development roadmap, check out the Notion documentation:
 
 📚 **Chess — Real-Time Multiplayer Chess Platform**
 https://app.notion.com/p/Chess-Real-Time-Multiplayer-Chess-Platform-384d891dff6880b0986dcee56ab94c85?source=copy_link
+
 > A real-time, multiplayer online chess platform. Users can sign up, create/join matches, play moves in real time via WebSocket, and compete on a global rating system.
 
 ---
