@@ -295,17 +295,22 @@ export const Game = () => {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 pb-12 w-full">
-        <div className="flex flex-col lg:flex-row gap-8 w-full items-center lg:items-start">
-          {/* Main Board Area */}
-          <div className="flex-1 w-full max-w-[600px] mx-auto lg:mx-0 flex flex-col gap-4">
-            {started && (
-              <div className="flex items-center justify-between bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 rounded-2xl p-3 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 w-full">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full items-stretch lg:items-start lg:justify-center">
+          {/* Left side — Opponent panel */}
+          {started && (
+            <aside className="order-1 lg:order-1 w-full lg:w-52 xl:w-56 shrink-0">
+              <div className="rounded-2xl bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 p-4 shadow-lg flex flex-row lg:flex-col items-center lg:items-stretch justify-between lg:justify-start gap-4">
                 <UserAvatar gameMetadata={gameMetadata} />
-                {getTimer(user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+                <div className="lg:mt-auto lg:pt-4 lg:border-t lg:border-slate-800/60 flex lg:justify-center">
+                  {getTimer(user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+                </div>
               </div>
-            )}
+            </aside>
+          )}
 
+          {/* Center — Board */}
+          <div className="order-2 lg:order-2 flex-1 w-full max-w-[640px] mx-auto">
             <div className="w-full rounded-xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-800/50">
               <ChessBoard
                 started={started}
@@ -317,18 +322,20 @@ export const Game = () => {
                 board={board}
               />
             </div>
-
-            {started && (
-              <div className="flex items-center justify-between bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 rounded-2xl p-3 shadow-lg">
-                <UserAvatar gameMetadata={gameMetadata} self />
-                {getTimer(user?.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
-              </div>
-            )}
           </div>
 
-          {/* Right Sidebar */}
-          <div className="w-full lg:w-[380px] shrink-0 flex flex-col gap-4">
-            <div className="rounded-2xl bg-slate-950/60 border border-slate-800 shadow-xl backdrop-blur-md overflow-hidden flex flex-col h-[500px] lg:h-[calc(100vh-140px)] min-h-[500px]">
+          {/* Right side — Self panel + Moves log */}
+          <div className="order-3 w-full lg:w-[360px] shrink-0 flex flex-col gap-4">
+            {started && (
+              <div className="rounded-2xl bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 p-4 shadow-lg flex flex-row lg:flex-col items-center lg:items-stretch justify-between lg:justify-start gap-4">
+                <UserAvatar gameMetadata={gameMetadata} self />
+                <div className="lg:mt-auto lg:pt-4 lg:border-t lg:border-slate-800/60 flex lg:justify-center">
+                  {getTimer(user?.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-2xl bg-slate-950/60 border border-slate-800 shadow-xl backdrop-blur-md overflow-hidden flex flex-col h-[400px] lg:h-[calc(100vh-140px)] min-h-[400px]">
               {!started ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8">
                   {added ? (

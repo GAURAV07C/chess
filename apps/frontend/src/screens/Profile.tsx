@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -49,6 +48,7 @@ type ProfileResponse = {
 export const Profile = () => {
   const navigate = useNavigate();
   const user = useUserStore((state) => state.user);
+  const { updateTheme, theme: activeTheme } = useThemeContext();
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +116,6 @@ export const Profile = () => {
   }
 
   const { stats, currentWinStreak, recentGames } = profile;
-  const { updateTheme, theme: activeTheme } = useThemeContext();
 
   return (
     <div className="min-h-screen bg-[#030611] text-white relative overflow-hidden">

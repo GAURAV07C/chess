@@ -110,9 +110,7 @@ export const ChessBoard = ({
   };
 
   useEffect(() => {
-    if (myColor === 'b') {
-      setIsFlipped(true);
-    }
+    setIsFlipped(myColor === 'b');
   }, [myColor, setIsFlipped]);
 
   const clearCanvas = useCallback(() => {
