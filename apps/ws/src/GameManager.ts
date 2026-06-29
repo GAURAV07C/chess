@@ -136,12 +136,12 @@ export class GameManager {
 
       if (message.type === SEND_PREDEFINED_MESSAGE) {
         const { chatId, predefinedId } = message.payload;
-        this.chatManager.sendPredefinedMessage(chatId, user.userId, predefinedId);
+        this.chatManager.sendPredefinedMessage(chatId, user.userId, user.name, predefinedId);
       }
 
       if (message.type === SEND_CUSTOM_MESSAGE) {
         const { chatId, content } = message.payload;
-        this.chatManager.sendCustomMessage(chatId, user.userId, content);
+        this.chatManager.sendCustomMessage(chatId, user.userId, user.name, content);
       }
 
       if (message.type === BOT_JOIN) {

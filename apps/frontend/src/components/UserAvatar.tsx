@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useUser } from '@repo/store/useUser';
 import { Metadata, Player } from '../screens/gameConstants';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, TrendingUp, Swords, MessageSquare, Smile } from 'lucide-react';
+import { X, Trophy, TrendingUp, Swords, MessageSquare, Smile, Send } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
 import { useParams } from 'react-router-dom';
 
@@ -59,6 +59,12 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
   const [emojiBlocked, setEmojiBlocked] = useState(false);
   const [customChatAccepted, setCustomChatAccepted] = useState(false);
   const [customChatPending, setCustomChatPending] = useState(false);
+  const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string; hasEmoji: boolean }>>(
+    []
+  );
+  const [customText, setCustomText] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [lastFloatingMsg, setLastFloatingMsg] = useState<{ content: string; hasEmoji: boolean } | null>(null);
 
   let player: Player | null = null;
   if (gameMetadata) {
@@ -78,11 +84,26 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
 
   useEffect(() => {
     if (!socket || !targetPlayerId || !gameId) return;
+    setMessages([]);
+    setChatBlocked(false);
+    setEmojiBlocked(false);
+    setCustomChatAccepted(false);
+    setCustomChatPending(false);
 
     const handler = (event: MessageEvent) => {
       try {
         const message = JSON.parse(event.data);
         switch (message.type) {
+          case 'chat_message':
+            setMessages((prev) => [
+              ...prev,
+              { id: message.id, senderId: message.senderId, content: message.content, hasEmoji: message.hasEmoji },
+            ]);
+            if (message.senderId !== user?.id) {
+              setLastFloatingMsg({ content: message.content, hasEmoji: message.hasEmoji });
+              setTimeout(() => setLastFloatingMsg(null), 3000);
+            }
+            break;
           case 'chat_blocked':
             setChatBlocked(true);
             break;
@@ -95,6 +116,9 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
           case 'emoji_unblocked':
             setEmojiBlocked(false);
             break;
+          case 'custom_chat_request':
+            setCustomChatPending(true);
+            break;
           case 'custom_chat_accepted':
             setCustomChatAccepted(true);
             setCustomChatPending(false);
@@ -102,9 +126,6 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
           case 'custom_chat_rejected':
             setCustomChatAccepted(false);
             setCustomChatPending(false);
-            break;
-          case 'custom_chat_request':
-            setCustomChatPending(true);
             break;
         }
       } catch (e) {
@@ -114,7 +135,7 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
 
     socket.addEventListener('message', handler);
     return () => socket.removeEventListener('message', handler);
-  }, [socket, targetPlayerId, gameId]);
+  }, [socket, targetPlayerId, gameId, user?.id]);
 
   const sendChatAction = (type: string, payload: Record<string, string>) => {
     if (!socket || !targetPlayerId) return;
@@ -150,6 +171,48 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
     setCustomChatPending(true);
     setShowChatModal(false);
   };
+
+  const sendPredefined = (text: string) => {
+    if (!socket || !targetPlayerId) return;
+    socket.send(
+      JSON.stringify({
+        type: 'SEND_PREDEFINED_MESSAGE',
+        payload: { chatId: `chat_${user?.id}_${targetPlayerId}`, predefinedId: text },
+      })
+    );
+    setShowChatModal(false);
+  };
+
+  const sendCustom = () => {
+    if (!socket || !targetPlayerId || !customText.trim()) return;
+    socket.send(
+      JSON.stringify({
+        type: 'SEND_CUSTOM_MESSAGE',
+        payload: { chatId: `chat_${user?.id}_${targetPlayerId}`, content: customText.trim() },
+      })
+    );
+    setCustomText('');
+    setShowChatModal(false);
+  };
+
+  const sendEmoji = (emoji: string) => {
+    if (!socket || !targetPlayerId) return;
+    socket.send(
+      JSON.stringify({
+        type: 'SEND_CUSTOM_MESSAGE',
+        payload: { chatId: `chat_${user?.id}_${targetPlayerId}`, content: emoji },
+      })
+    );
+    setShowEmojiPicker(false);
+  };
+
+  const QUICK_MESSAGES = [
+    { id: 'good_luck', text: 'Good luck!' },
+    { id: 'well_played', text: 'Well played!' },
+    { id: 'nice_move', text: 'Nice move!' },
+    { id: 'thanks', text: 'Thanks!' },
+    { id: 'good_game', text: 'Good game!' },
+  ];
 
   useEffect(() => {
     if (!showProfile || !player?.id) {
@@ -206,23 +269,184 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
         <span className="text-white text-sm font-medium">{player?.name}</span>
       </div>
 
-      {/* Chat & Emoji icons below avatar */}
-      <div className="flex items-center gap-2 mt-1">
-        <button
-          onClick={() => setShowChatModal(true)}
-          className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-          title="Chat"
-        >
-          <MessageSquare size={14} />
-        </button>
-        <button
-          onClick={() => setShowChatModal(true)}
-          className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-          title="Emoji"
-        >
-          <Smile size={14} />
-        </button>
-      </div>
+      {!self && (
+        <>
+          {/* Floating last message above chat icon */}
+          {lastFloatingMsg && (
+            <div className="relative mb-1 animate-[msgPop_0.4s_ease-out]">
+              <div className="bg-slate-900/95 border border-slate-700/50 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-xl max-w-[180px]">
+                <p className="text-[11px] text-white break-words leading-tight">
+                  {lastFloatingMsg.hasEmoji ? lastFloatingMsg.content : lastFloatingMsg.content}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Chat & Emoji icons below opponent avatar */}
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              onClick={() => setShowChatModal(true)}
+              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              title="Chat"
+            >
+              <MessageSquare size={14} />
+            </button>
+            <button
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              title="Emoji"
+            >
+              <Smile size={14} />
+            </button>
+          </div>
+
+          {/* Emoji Picker */}
+          {showEmojiPicker && !self && (
+            <div className="absolute z-50 bottom-full mb-2 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl p-3 w-64">
+              <div className="grid grid-cols-8 gap-1.5">
+                {[
+                  '👍',
+                  '👎',
+                  '👏',
+                  '🔥',
+                  '❤️',
+                  '😂',
+                  '😮',
+                  '😢',
+                  '😡',
+                  '👀',
+                  '💪',
+                  '🙏',
+                  '😍',
+                  '🤔',
+                  '😎',
+                  '🥳',
+                  '😭',
+                  '💯',
+                  '✨',
+                  '🎉',
+                  '💪',
+                  '🤝',
+                  '👋',
+                  '🙌',
+                ].map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => sendEmoji(emoji)}
+                    className="text-xl hover:bg-slate-800 rounded-lg p-1.5 transition-colors"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Chat Modal */}
+          {showChatModal &&
+            createPortal(
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+                  onClick={() => setShowChatModal(false)}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-slate-950/95 border border-slate-800 rounded-2xl p-5 max-w-sm w-full mx-4 relative shadow-2xl"
+                  >
+                    <button
+                      onClick={() => setShowChatModal(false)}
+                      className="absolute top-3 right-3 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer z-10"
+                    >
+                      <X size={20} />
+                    </button>
+
+                    <h3 className="text-lg font-bold text-white mb-2">Chat with {player?.name}</h3>
+
+                    {/* Messages */}
+                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar space-y-2 mb-3 bg-slate-900/50 rounded-xl p-3 border border-slate-800">
+                      {messages.length === 0 && <p className="text-xs text-slate-500 text-center">No messages yet</p>}
+                      {messages.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className={`text-xs px-3 py-1.5 rounded-xl ${
+                            msg.senderId === user?.id
+                              ? 'bg-amber-500/20 text-amber-100 ml-auto max-w-[80%]'
+                              : 'bg-slate-800 text-slate-200 max-w-[80%]'
+                          }`}
+                        >
+                          <span className="font-bold">{msg.senderId === user?.id ? 'You' : player?.name}</span>
+                          <p className="mt-0.5">{msg.content}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* Predefined messages */}
+                      <div className="flex flex-wrap gap-2">
+                        {QUICK_MESSAGES.map((q) => (
+                          <button
+                            key={q.id}
+                            onClick={() => sendPredefined(q.id)}
+                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs border border-slate-700 transition-colors"
+                          >
+                            {q.text}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Custom message input */}
+                      {customChatAccepted && (
+                        <div className="flex gap-2">
+                          <input
+                            value={customText}
+                            onChange={(e) => setCustomText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && sendCustom()}
+                            placeholder="Type a message..."
+                            disabled={chatBlocked}
+                            className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 disabled:opacity-50"
+                          />
+                          <button
+                            onClick={sendCustom}
+                            disabled={chatBlocked || !customText.trim()}
+                            className="p-2 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 text-slate-950 rounded-lg transition-colors"
+                          >
+                            <Send size={14} />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Request custom chat */}
+                      {!customChatAccepted && !customChatPending && (
+                        <button
+                          onClick={handleRequestCustomChat}
+                          className="w-full px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-colors"
+                        >
+                          Request Custom Chat
+                        </button>
+                      )}
+                      {customChatPending && (
+                        <p className="text-[11px] text-slate-400 text-center">Custom chat request pending...</p>
+                      )}
+                      {customChatAccepted && (
+                        <p className="text-[11px] text-emerald-400 text-center">Custom chat active</p>
+                      )}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>,
+              document.body
+            )}
+        </>
+      )}
 
       {showProfile &&
         createPortal(
@@ -290,6 +514,51 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                       </div>
                     </div>
 
+                    {/* Profile Block/Unblock Section */}
+                    {!self && (
+                      <div className="border-t border-slate-800 pt-3 mt-1">
+                        <p className="text-slate-300 text-xs font-semibold mb-2 tracking-wide uppercase">Actions</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400 text-xs">Chat</span>
+                            {chatBlocked ? (
+                              <button
+                                onClick={handleUnblockChat}
+                                className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[11px] font-bold hover:bg-emerald-500/30 transition-colors"
+                              >
+                                Unblock
+                              </button>
+                            ) : (
+                              <button
+                                onClick={handleBlockChat}
+                                className="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-md text-[11px] font-bold hover:bg-rose-500/30 transition-colors"
+                              >
+                                Block
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400 text-xs">Emoji</span>
+                            {emojiBlocked ? (
+                              <button
+                                onClick={handleUnblockEmoji}
+                                className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[11px] font-bold hover:bg-emerald-500/30 transition-colors"
+                              >
+                                Unblock
+                              </button>
+                            ) : (
+                              <button
+                                onClick={handleBlockEmoji}
+                                className="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-md text-[11px] font-bold hover:bg-rose-500/30 transition-colors"
+                              >
+                                Block
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {profile.recentGames.length > 0 && (
                       <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <p className="text-slate-300 text-sm font-semibold mb-2">Recent Games</p>
@@ -351,11 +620,64 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                   <X size={20} />
                 </button>
 
-                <h3 className="text-lg font-bold text-white mb-4">Chat with {player?.name}</h3>
+                <h3 className="text-lg font-bold text-white mb-2">Chat with {self ? 'yourself' : player?.name}</h3>
+
+                {/* Messages */}
+                <div className="max-h-[200px] overflow-y-auto custom-scrollbar space-y-2 mb-3 bg-slate-900/50 rounded-xl p-3 border border-slate-800">
+                  {messages.length === 0 && <p className="text-xs text-slate-500 text-center">No messages yet</p>}
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`text-xs px-3 py-1.5 rounded-xl ${
+                        msg.senderId === user?.id
+                          ? 'bg-amber-500/20 text-amber-100 ml-auto max-w-[80%]'
+                          : 'bg-slate-800 text-slate-200 max-w-[80%]'
+                      }`}
+                    >
+                      <span className="font-bold">{msg.senderId === user?.id ? 'You' : player?.name}</span>
+                      <p className="mt-0.5">{msg.content}</p>
+                    </div>
+                  ))}
+                </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300 text-sm">Chat</span>
+                  {/* Predefined messages */}
+                  <div className="flex flex-wrap gap-2">
+                    {QUICK_MESSAGES.map((q) => (
+                      <button
+                        key={q.id}
+                        onClick={() => sendPredefined(q.id)}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs border border-slate-700 transition-colors"
+                      >
+                        {q.text}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom message input */}
+                  {customChatAccepted && (
+                    <div className="flex gap-2">
+                      <input
+                        value={customText}
+                        onChange={(e) => setCustomText(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && sendCustom()}
+                        placeholder="Type a message..."
+                        disabled={chatBlocked}
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 disabled:opacity-50"
+                      />
+                      <button
+                        onClick={sendCustom}
+                        disabled={chatBlocked || !customText.trim()}
+                        className="p-2 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 text-slate-950 rounded-lg transition-colors"
+                      >
+                        <Send size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Block controls */}
+                  <div className="flex items-center justify-between border-t border-slate-800 pt-3">
+                    <span className="text-slate-300 text-xs font-medium">Chat</span>
                     {chatBlocked ? (
                       <button
                         onClick={handleUnblockChat}
@@ -374,7 +696,7 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-300 text-sm">Emoji</span>
+                    <span className="text-slate-300 text-xs font-medium">Emoji</span>
                     {emojiBlocked ? (
                       <button
                         onClick={handleUnblockEmoji}
@@ -392,22 +714,19 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                     )}
                   </div>
 
+                  {/* Request custom chat (only if not pending/accepted) */}
                   {!customChatAccepted && !customChatPending && (
                     <button
                       onClick={handleRequestCustomChat}
-                      className="w-full mt-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-bold hover:bg-amber-500/30 transition-colors"
+                      className="w-full px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-colors"
                     >
                       Request Custom Chat
                     </button>
                   )}
-
                   {customChatPending && (
-                    <p className="text-xs text-slate-400 text-center mt-2">Custom chat request pending...</p>
+                    <p className="text-[11px] text-slate-400 text-center">Custom chat request pending...</p>
                   )}
-
-                  {customChatAccepted && (
-                    <p className="text-xs text-emerald-400 text-center mt-2">Custom chat accepted</p>
-                  )}
+                  {customChatAccepted && <p className="text-[11px] text-emerald-400 text-center">Custom chat active</p>}
                 </div>
               </motion.div>
             </motion.div>

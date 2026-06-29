@@ -70,7 +70,7 @@ export const ChessBoard = ({
   } | null)[][];
   socket: WebSocket;
 }) => {
-  console.log('chessboard reloaded');
+  // console.log('chessboard reloaded');
 
   const { currentTheme } = useThemeContext();
   const themeName = currentTheme?.name;

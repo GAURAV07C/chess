@@ -149,7 +149,12 @@ export class ChatManager {
     return true;
   }
 
-  sendPredefinedMessage(chatId: string, senderId: string, predefinedId: string): ChatMessage | null {
+  sendPredefinedMessage(
+    chatId: string,
+    senderId: string,
+    senderName: string,
+    predefinedId: string
+  ): ChatMessage | null {
     const chat = this.chats.get(chatId);
     if (!chat || chat.isCustom) return null;
     if (chat.blockedBy) return null;
@@ -163,7 +168,7 @@ export class ChatManager {
       id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       chatId,
       senderId,
-      senderName: senderId,
+      senderName,
       content: predefined.text,
       hasEmoji: false,
       createdAt: Date.now(),
@@ -175,7 +180,7 @@ export class ChatManager {
     return msg;
   }
 
-  sendCustomMessage(chatId: string, senderId: string, content: string): ChatMessage | null {
+  sendCustomMessage(chatId: string, senderId: string, senderName: string, content: string): ChatMessage | null {
     const chat = this.chats.get(chatId);
     if (!chat || !chat.isCustom || chat.status !== 'accepted') return null;
     if (chat.blockedBy) return null;
@@ -192,7 +197,7 @@ export class ChatManager {
       id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       chatId,
       senderId,
-      senderName: senderId,
+      senderName,
       content,
       hasEmoji,
       createdAt: Date.now(),
