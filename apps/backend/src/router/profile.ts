@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { db } from '../db';
+import { db, GameStatus } from '@repo/db';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import { GameStatus } from '@prisma/client';
 
 const router = Router();
 

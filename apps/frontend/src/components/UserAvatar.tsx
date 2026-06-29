@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import { useUser } from '@repo/store/useUser';
 import { Metadata, Player } from '../screens/gameConstants';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, TrendingUp, Swords } from 'lucide-react';
+import { X, Trophy, TrendingUp, Swords, MessageSquare, Smile } from 'lucide-react';
+import { useSocket } from '../hooks/useSocket';
+import { useParams } from 'react-router-dom';
 
 interface RecentGame {
   id: string;
@@ -46,9 +48,17 @@ interface UserAvatarProps {
 
 export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
   const user = useUser();
+  const socket = useSocket();
+  const { gameId } = useParams();
   const [showProfile, setShowProfile] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [chatBlocked, setChatBlocked] = useState(false);
+  const [emojiBlocked, setEmojiBlocked] = useState(false);
+  const [customChatAccepted, setCustomChatAccepted] = useState(false);
+  const [customChatPending, setCustomChatPending] = useState(false);
 
   let player: Player | null = null;
   if (gameMetadata) {
@@ -58,6 +68,88 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
       player = self ? gameMetadata.whitePlayer : gameMetadata.blackPlayer;
     }
   }
+
+  const targetPlayerId =
+    gameMetadata && user
+      ? gameMetadata.blackPlayer.id === user.id
+        ? gameMetadata.whitePlayer.id
+        : gameMetadata.blackPlayer.id
+      : null;
+
+  useEffect(() => {
+    if (!socket || !targetPlayerId || !gameId) return;
+
+    const handler = (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data);
+        switch (message.type) {
+          case 'chat_blocked':
+            setChatBlocked(true);
+            break;
+          case 'chat_unblocked':
+            setChatBlocked(false);
+            break;
+          case 'emoji_blocked':
+            setEmojiBlocked(true);
+            break;
+          case 'emoji_unblocked':
+            setEmojiBlocked(false);
+            break;
+          case 'custom_chat_accepted':
+            setCustomChatAccepted(true);
+            setCustomChatPending(false);
+            break;
+          case 'custom_chat_rejected':
+            setCustomChatAccepted(false);
+            setCustomChatPending(false);
+            break;
+          case 'custom_chat_request':
+            setCustomChatPending(true);
+            break;
+        }
+      } catch (e) {
+        console.error('Failed to parse chat message', e);
+      }
+    };
+
+    socket.addEventListener('message', handler);
+    return () => socket.removeEventListener('message', handler);
+  }, [socket, targetPlayerId, gameId]);
+
+  const sendChatAction = (type: string, payload: Record<string, string>) => {
+    if (!socket || !targetPlayerId) return;
+    socket.send(JSON.stringify({ type, payload }));
+  };
+
+  const handleBlockChat = () => {
+    sendChatAction('BLOCK_CHAT', { targetUserId: targetPlayerId as string });
+    setChatBlocked(true);
+    setShowChatModal(false);
+  };
+
+  const handleUnblockChat = () => {
+    sendChatAction('UNBLOCK_CHAT', { targetUserId: targetPlayerId as string });
+    setChatBlocked(false);
+    setShowChatModal(false);
+  };
+
+  const handleBlockEmoji = () => {
+    sendChatAction('BLOCK_EMOJI', { targetUserId: targetPlayerId as string });
+    setEmojiBlocked(true);
+    setShowChatModal(false);
+  };
+
+  const handleUnblockEmoji = () => {
+    sendChatAction('UNBLOCK_EMOJI', { targetUserId: targetPlayerId as string });
+    setEmojiBlocked(false);
+    setShowChatModal(false);
+  };
+
+  const handleRequestCustomChat = () => {
+    sendChatAction('REQUEST_CUSTOM_CHAT', { targetUserId: targetPlayerId as string });
+    setCustomChatPending(true);
+    setShowChatModal(false);
+  };
 
   useEffect(() => {
     if (!showProfile || !player?.id) {
@@ -112,6 +204,24 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
           {avatarLetter}
         </div>
         <span className="text-white text-sm font-medium">{player?.name}</span>
+      </div>
+
+      {/* Chat & Emoji icons below avatar */}
+      <div className="flex items-center gap-2 mt-1">
+        <button
+          onClick={() => setShowChatModal(true)}
+          className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          title="Chat"
+        >
+          <MessageSquare size={14} />
+        </button>
+        <button
+          onClick={() => setShowChatModal(true)}
+          className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          title="Emoji"
+        >
+          <Smile size={14} />
+        </button>
       </div>
 
       {showProfile &&
@@ -208,6 +318,97 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                     )}
                   </div>
                 ) : null}
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>,
+          document.body
+        )}
+
+      {/* Chat Settings Modal */}
+      {showChatModal &&
+        createPortal(
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+              onClick={() => setShowChatModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-slate-950/95 border border-slate-800 rounded-2xl p-5 max-w-sm w-full mx-4 relative shadow-2xl"
+              >
+                <button
+                  onClick={() => setShowChatModal(false)}
+                  className="absolute top-3 right-3 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer z-10"
+                >
+                  <X size={20} />
+                </button>
+
+                <h3 className="text-lg font-bold text-white mb-4">Chat with {player?.name}</h3>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-300 text-sm">Chat</span>
+                    {chatBlocked ? (
+                      <button
+                        onClick={handleUnblockChat}
+                        className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold hover:bg-emerald-500/30 transition-colors"
+                      >
+                        Unblock
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleBlockChat}
+                        className="px-3 py-1.5 bg-rose-500/20 text-rose-400 rounded-lg text-xs font-bold hover:bg-rose-500/30 transition-colors"
+                      >
+                        Block
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-300 text-sm">Emoji</span>
+                    {emojiBlocked ? (
+                      <button
+                        onClick={handleUnblockEmoji}
+                        className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold hover:bg-emerald-500/30 transition-colors"
+                      >
+                        Unblock
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleBlockEmoji}
+                        className="px-3 py-1.5 bg-rose-500/20 text-rose-400 rounded-lg text-xs font-bold hover:bg-rose-500/30 transition-colors"
+                      >
+                        Block
+                      </button>
+                    )}
+                  </div>
+
+                  {!customChatAccepted && !customChatPending && (
+                    <button
+                      onClick={handleRequestCustomChat}
+                      className="w-full mt-2 px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-sm font-bold hover:bg-amber-500/30 transition-colors"
+                    >
+                      Request Custom Chat
+                    </button>
+                  )}
+
+                  {customChatPending && (
+                    <p className="text-xs text-slate-400 text-center mt-2">Custom chat request pending...</p>
+                  )}
+
+                  {customChatAccepted && (
+                    <p className="text-xs text-emerald-400 text-center mt-2">Custom chat accepted</p>
+                  )}
+                </div>
               </motion.div>
             </motion.div>
           </AnimatePresence>,

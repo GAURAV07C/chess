@@ -36,12 +36,9 @@ export const useUserStore = create<UserState>()(
           if (response.ok) {
             const data = (await response.json()) as User;
             set({ user: data });
-          } else {
-            set({ user: null });
           }
         } catch (e) {
           console.error(e);
-          set({ user: null });
         } finally {
           set({ hydrated: true });
         }

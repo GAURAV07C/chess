@@ -18,7 +18,7 @@ export class User {
   }
 }
 
-class SocketManager {
+export class SocketManager {
   private static instance: SocketManager;
   private interestedSockets: Map<string, User[]>;
   private userRoomMappping: Map<string, string>;
@@ -67,6 +67,17 @@ class SocketManager {
       this.interestedSockets.delete(roomId);
     }
     this.userRoomMappping.delete(user.userId);
+  }
+
+  sendToUser(userId: string, message: string) {
+    for (const [, roomUsers] of this.interestedSockets.entries()) {
+      const user = roomUsers.find((u) => u.userId === userId);
+      if (user) {
+        user.socket.send(message);
+        return;
+      }
+    }
+    console.error('User not found in any room:', userId);
   }
 }
 

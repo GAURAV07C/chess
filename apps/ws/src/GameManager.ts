@@ -12,22 +12,33 @@ import {
   GAME_ADDED,
   GAME_ENDED,
   EXIT_GAME,
+  REQUEST_CUSTOM_CHAT,
+  ACCEPT_CHAT,
+  BLOCK_CHAT,
+  UNBLOCK_CHAT,
+  BLOCK_EMOJI,
+  UNBLOCK_EMOJI,
+  SEND_PREDEFINED_MESSAGE,
+  SEND_CUSTOM_MESSAGE,
 } from './messages';
 import { Game } from './Game';
 import { db } from './db';
 import { socketManager, User } from './SocketManager';
 import { GameStatus } from '@prisma/client';
 import { Move } from 'chess.js';
+import { ChatManager } from './ChatManager';
 
 export class GameManager {
   private games: Game[];
   private pendingGameId: string | null;
   private users: User[];
+  private chatManager: ChatManager;
 
   constructor() {
     this.games = [];
     this.pendingGameId = null;
     this.users = [];
+    this.chatManager = ChatManager.getInstance(socketManager);
   }
 
   addUser(user: User) {
@@ -93,6 +104,46 @@ export class GameManager {
         }
       }
 
+      if (message.type === REQUEST_CUSTOM_CHAT) {
+        const targetUserId = message.payload.targetUserId;
+        this.chatManager.requestCustomChat(user.userId, targetUserId);
+      }
+
+      if (message.type === ACCEPT_CHAT) {
+        const chatId = message.payload.chatId;
+        this.chatManager.acceptCustomChat(chatId, user.userId);
+      }
+
+      if (message.type === BLOCK_CHAT) {
+        const targetId = message.payload.targetUserId;
+        this.chatManager.blockChat(user.userId, targetId);
+      }
+
+      if (message.type === UNBLOCK_CHAT) {
+        const targetId = message.payload.targetUserId;
+        this.chatManager.unblockChat(user.userId, targetId);
+      }
+
+      if (message.type === BLOCK_EMOJI) {
+        const targetId = message.payload.targetUserId;
+        this.chatManager.blockEmoji(user.userId, targetId);
+      }
+
+      if (message.type === UNBLOCK_EMOJI) {
+        const targetId = message.payload.targetUserId;
+        this.chatManager.unblockEmoji(user.userId, targetId);
+      }
+
+      if (message.type === SEND_PREDEFINED_MESSAGE) {
+        const { chatId, predefinedId } = message.payload;
+        this.chatManager.sendPredefinedMessage(chatId, user.userId, predefinedId);
+      }
+
+      if (message.type === SEND_CUSTOM_MESSAGE) {
+        const { chatId, content } = message.payload;
+        this.chatManager.sendCustomMessage(chatId, user.userId, content);
+      }
+
       if (message.type === BOT_JOIN) {
         const gameId = message.payload?.gameId;
         await this.handleBotGame(user, gameId);
@@ -127,6 +178,7 @@ export class GameManager {
         if (availableGame && !availableGame.player2UserId) {
           socketManager.addUser(user, availableGame.gameId);
           await availableGame.updateSecondPlayer(user.userId);
+          this.chatManager.createDefaultChat(availableGame.player1UserId, user.userId);
           return;
         }
 
@@ -265,6 +317,7 @@ export class GameManager {
       socketManager.addUser(user, game.gameId);
       await game.updateSecondPlayer(user.userId);
       this.pendingGameId = null;
+      this.chatManager.createDefaultChat(game.player1UserId, user.userId);
       return;
     }
 
@@ -351,6 +404,7 @@ export class GameManager {
     socketManager.addUser(user, game.gameId);
     await game.updateSecondPlayer(user.userId);
     this.pendingGameId = null;
+    this.chatManager.createDefaultChat(game.player1UserId, user.userId);
   }
 
   private async handleBotGame(user: User, gameId: string) {

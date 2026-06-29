@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { COOKIE_MAX_AGE } from '../consts';
 const router = Router();
 
-const CLIENT_URL = process.env.AUTH_REDIRECT_URL ?? 'http://localhost:5173/game/random';
+const CLIENT_URL = process.env.AUTH_REDIRECT_URL ?? 'http://localhost:5173/auth/callback';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
 interface userJwtClaims {

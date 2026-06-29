@@ -6,6 +6,8 @@ const prismaClientSingleton = () => {
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
+export { GameStatus, GameResult, TimeControl, AuthProvider } from '@prisma/client';
+
 // eslint-disable-next-line
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClientSingleton | undefined;
@@ -13,6 +15,7 @@ const globalForPrisma = globalThis as unknown as {
 
 const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
+export { prisma as db };
 export default prisma;
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
