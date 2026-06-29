@@ -5,6 +5,7 @@ import { Game } from './screens/Game';
 import { Dashboard } from './screens/Dashboard';
 import { Profile } from './screens/Profile';
 import Login from './screens/Login';
+import AuthCallback from './screens/AuthCallback';
 import { ThemesProvider } from './context/themeContext';
 import { Loader } from './components/Loader';
 import { Layout } from './layout';
@@ -54,6 +55,7 @@ function AuthApp() {
             </Layout>
           }
         />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route
           path="/login"
           element={

@@ -109,9 +109,31 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    successRedirect: CLIENT_URL,
-    failureRedirect: '/login/failed',
-  })
+    session: true,
+    failureRedirect: '/auth/login/failed',
+  }),
+  (req: Request, res: Response) => {
+    try {
+      const user = req.user as any;
+      if (!user?.id) return res.redirect('/login/failed');
+
+      const token = jwt.sign({ userId: user.id, name: user.name ?? user.username ?? '' }, JWT_SECRET);
+      res.cookie('guest', token, {
+        maxAge: COOKIE_MAX_AGE,
+        httpOnly: false,
+        sameSite: 'lax',
+        path: '/',
+      });
+
+      const redirectUrl = new URL(CLIENT_URL);
+      redirectUrl.searchParams.set('token', token);
+      redirectUrl.searchParams.set('userId', user.id);
+      redirectUrl.searchParams.set('name', user.name ?? user.username ?? '');
+      return res.redirect(redirectUrl.toString());
+    } catch {
+      return res.redirect('/login/failed');
+    }
+  }
 );
 
 router.get('/github', passport.authenticate('github', { scope: ['read:user', 'user:email'] }));
@@ -119,9 +141,31 @@ router.get('/github', passport.authenticate('github', { scope: ['read:user', 'us
 router.get(
   '/github/callback',
   passport.authenticate('github', {
-    successRedirect: CLIENT_URL,
-    failureRedirect: '/login/failed',
-  })
+    session: true,
+    failureRedirect: '/auth/login/failed',
+  }),
+  (req: Request, res: Response) => {
+    try {
+      const user = req.user as any;
+      if (!user?.id) return res.redirect('/login/failed');
+
+      const token = jwt.sign({ userId: user.id, name: user.name ?? user.username ?? '' }, JWT_SECRET);
+      res.cookie('guest', token, {
+        maxAge: COOKIE_MAX_AGE,
+        httpOnly: false,
+        sameSite: 'lax',
+        path: '/',
+      });
+
+      const redirectUrl = new URL(CLIENT_URL);
+      redirectUrl.searchParams.set('token', token);
+      redirectUrl.searchParams.set('userId', user.id);
+      redirectUrl.searchParams.set('name', user.name ?? user.username ?? '');
+      return res.redirect(redirectUrl.toString());
+    } catch {
+      return res.redirect('/login/failed');
+    }
+  }
 );
 
 export default router;
