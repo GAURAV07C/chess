@@ -8,6 +8,7 @@ import { isPromoting } from '@/utils/chessHelpers';
 import { useSocket } from '../hooks/useSocket';
 import { Chess, Move } from 'chess.js';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import MovesTable from '../components/MovesTable';
 import { useUser } from '@repo/store/useUser';
 import { useChessBoardStore } from '@repo/store/chessBoard';
@@ -184,7 +185,7 @@ export const Game = () => {
           break;
 
         default:
-          alert(message.payload.message);
+          toast.error(message.payload.message);
           break;
       }
     };

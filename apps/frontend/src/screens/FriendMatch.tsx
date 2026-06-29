@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { ClipboardCopyIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Modal = ({ children }: { children: React.ReactNode }) => (
   <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50">
@@ -65,7 +66,7 @@ export const FriendMatch: React.FC = () => {
     if (!gameId) return;
     const link = `${window.location.origin}/game/friend/${gameId}`;
     await navigator.clipboard.writeText(link);
-    alert('Link copied to clipboard!');
+    toast.success('Link copied to clipboard!');
   };
 
   return (

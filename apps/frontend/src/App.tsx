@@ -10,6 +10,7 @@ import { ThemesProvider } from './context/themeContext';
 import { Loader } from './components/Loader';
 import { Layout } from './layout';
 import { useHydratedUser } from './hooks/useHydratedUser';
+import { Toaster } from 'sonner';
 
 import './App.css';
 import './themes.css';
@@ -39,6 +40,7 @@ export default function App() {
           <AuthApp />
         </ThemesProvider>
       </Suspense>
+      <Toaster />
     </div>
   );
 }
