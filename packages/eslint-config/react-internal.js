@@ -14,7 +14,8 @@ const project = resolve(process.cwd(), "tsconfig.json");
 
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  extends: ["eslint:recommended", "prettier", "eslint-config-turbo"],
+  // Temporarily disable turbo ESLint config to avoid eslint-plugin-turbo runtime crash.
+  extends: ["eslint:recommended", "prettier"],
   plugins: ["only-warn"],
   globals: {
     React: true,
@@ -41,3 +42,4 @@ module.exports = {
     { files: ["*.js?(x)", "*.ts?(x)"] },
   ],
 };
+

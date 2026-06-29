@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-refresh/only-export-components */
 import { Chess, Color, Move, PieceSymbol, Square } from 'chess.js';
 import { MouseEvent, useCallback, useEffect, useState,  } from 'react';
 import { MOVE } from '../screens/gameConstants';

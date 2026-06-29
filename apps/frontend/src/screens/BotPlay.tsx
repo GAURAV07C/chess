@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Layout } from '../layout';
 import { motion } from 'motion/react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { v4 as uuidv4 } from 'uuid';
 import { ClipboardCopyIcon } from 'lucide-react';
 
 export const BotPlay: React.FC = () => {
   const navigate = useNavigate();
-  const { socket } = useSocket();
+  const socket = useSocket();
   const [gameId] = useState<string>(uuidv4());
   const [created, setCreated] = useState(false);
 
   // Create a new game with bot as opponent via WS (assumes backend supports BOT_JOIN)
   useEffect(() => {
     if (socket && !created) {
-      socket.send(
-        JSON.stringify({ type: 'BOT_JOIN', payload: { gameId } })
-      );
+      socket.send(JSON.stringify({ type: 'BOT_JOIN', payload: { gameId } }));
       setCreated(true);
     }
   }, [socket, created, gameId]);

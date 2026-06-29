@@ -5,21 +5,15 @@ import { Game } from './screens/Game';
 import { Dashboard } from './screens/Dashboard';
 import { Profile } from './screens/Profile';
 import Login from './screens/Login';
-import { Settings } from './screens/Settings';
-import { Themes } from "./components/themes";
-import { ThemesProvider } from "./context/themeContext";
+import { ThemesProvider } from './context/themeContext';
 import { Loader } from './components/Loader';
 import { Layout } from './layout';
 import { useHydratedUser } from './hooks/useHydratedUser';
 
-import "./App.css";
-import "./themes.css";
+import './App.css';
+import './themes.css';
 import { FriendMatch } from './screens/FriendMatch';
-import { LocalPlay } from './screens/LocalPlay';
 import { BotPlay } from './screens/BotPlay';
-import { PuzzleRush } from './screens/PuzzleRush';
-import { Leaderboard } from './screens/Leaderboard';
-import Tournaments from './screens/Tournaments';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, mounted } = useHydratedUser();
@@ -53,7 +47,11 @@ function AuthApp() {
       <Routes>
         <Route
           path="/"
-          element={<Layout><Landing /></Layout>}
+          element={
+            <Layout>
+              <Landing />
+            </Layout>
+          }
         />
         <Route
           path="/login"
@@ -81,38 +79,34 @@ function AuthApp() {
         />
         <Route
           path="/game/:gameId"
-          element={<Layout><Game /></Layout>}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Game />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/game/friend/:inviteId?"
-          element={<Layout><FriendMatch /></Layout>}
-        />
-        <Route
-          path="/game/local"
-          element={<Layout><LocalPlay /></Layout>}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <FriendMatch />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/game/bot"
-          element={<Layout><BotPlay /></Layout>}
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <BotPlay />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
-        <Route
-          path="/puzzle"
-          element={<Layout><PuzzleRush /></Layout>}
-        />
-        <Route
-          path="/leaderboard"
-          element={<Layout><Leaderboard /></Layout>}
-        />
-        <Route
-          path="/tournaments"
-          element={<Layout><Tournaments /></Layout>}
-        />
-        <Route
-          path="/settings"
-          element={<Layout><Settings /></Layout>}
-        >
-          <Route path="themes" element={<Themes />} />
-        </Route>
       </Routes>
     </BrowserRouter>
   );

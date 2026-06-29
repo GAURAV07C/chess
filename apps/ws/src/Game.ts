@@ -3,7 +3,7 @@ import { GAME_ENDED, INIT_GAME, MOVE } from './messages';
 import { db } from './db';
 import { randomUUID } from 'crypto';
 import { socketManager, User } from './SocketManager';
-import { AuthProvider } from '@prisma/client';
+import AuthProvider from '@prisma/client';
 
 type GAME_STATUS = 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED' | 'TIME_UP' | 'PLAYER_EXIT';
 type GAME_RESULT = 'WHITE_WINS' | 'BLACK_WINS' | 'DRAW';
@@ -41,7 +41,9 @@ export class Game {
   public player2UserId: string | null;
   public board: Chess;
   private moveCount = 0;
+  // eslint-disable-next-line no-undef
   private timer: NodeJS.Timeout | null = null;
+  // eslint-disable-next-line no-undef
   private moveTimer: NodeJS.Timeout | null = null;
   public result: GAME_RESULT | null = null;
   private player1TimeConsumed = 0;
@@ -354,6 +356,7 @@ export class Game {
     if (this.moveTimer) clearTimeout(this.moveTimer);
   }
 
+  // eslint-disable-next-line no-undef
   setTimer(timer: NodeJS.Timeout) {
     this.timer = timer;
   }

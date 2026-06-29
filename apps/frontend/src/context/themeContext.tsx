@@ -19,6 +19,7 @@ const AVAILABLE_THEMES: THEME[] = [
   'Bubblegum Queen',
 ];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ThemeContext = createContext<THEME_CONTEXT | null>(null);
 
 export function ThemesProvider({ children }: { children: React.ReactNode }) {

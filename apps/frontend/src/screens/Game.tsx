@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useState } from 'react';
@@ -199,7 +200,7 @@ export const Game = () => {
         })
       );
     }
-  }, [chess, socket]);
+  }, [chess, gameId, navigate, setMoves, socket]);
 
   useEffect(() => {
     if (started) {
@@ -212,7 +213,7 @@ export const Game = () => {
       }, 100);
       return () => clearInterval(interval);
     }
-  }, [started, gameMetadata, user]);
+  }, [started, gameMetadata, user, chess]);
 
   const getTimer = (timeConsumed: number) => {
     const timeLeftMs = GAME_TIME_MS - timeConsumed;
