@@ -97,9 +97,9 @@ router.get('/logout', (req: Request, res: Response) => {
   res.clearCookie('guest');
   res.clearCookie('jwt');
   req.logout((err) => {
-if (err) {
-  console.error('Error logging out:', err);
-}
+    if (err) {
+      console.error('Error logging out:', err);
+    }
   });
   res.status(200).json({ message: 'Logged out successfully' });
 });

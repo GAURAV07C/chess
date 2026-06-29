@@ -1,14 +1,6 @@
 import { Move } from 'chess.js';
 import { useEffect, useRef } from 'react';
-import {
-  HandshakeIcon,
-  FlagIcon,
-  ChevronFirst,
-  ChevronLast,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-} from 'lucide-react';
+import { HandshakeIcon, FlagIcon, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useChessBoardStore } from '@repo/store/chessBoard';
 import { useSocket } from '../hooks/useSocket';
 import { useParams } from 'react-router-dom';
@@ -45,10 +37,7 @@ const MovesTable: React.FC<MovesTableProps> = ({ setResult }) => {
   }, [moves]);
   return (
     <div className="text-[#C3C3C0] relative w-full ">
-      <div
-        className="text-sm h-[45vh] max-h-[45vh] overflow-y-auto"
-        ref={movesTableRef}
-      >
+      <div className="text-sm h-[45vh] max-h-[45vh] overflow-y-auto" ref={movesTableRef}>
         {movesArray.map((movePairs, index) => {
           return (
             <div
@@ -59,13 +48,9 @@ const MovesTable: React.FC<MovesTableProps> = ({ setResult }) => {
                 <span className="text-[#C3C3C0] px-2 py-1.5">{`${index + 1}.`}</span>
 
                 {movePairs.map((move, movePairIndex) => {
-                  const isLastIndex =
-                    movePairIndex === movePairs.length - 1 &&
-                    movesArray.length - 1 === index;
+                  const isLastIndex = movePairIndex === movePairs.length - 1 && movesArray.length - 1 === index;
                   const isHighlighted =
-                    userSelectedMoveIndex !== null
-                      ? userSelectedMoveIndex === index * 2 + movePairIndex
-                      : isLastIndex;
+                    userSelectedMoveIndex !== null ? userSelectedMoveIndex === index * 2 + movePairIndex : isLastIndex;
                   const { from, to } = move;
 
                   return (
@@ -76,7 +61,9 @@ const MovesTable: React.FC<MovesTableProps> = ({ setResult }) => {
                         setUserSelectedMoveIndex(index * 2 + movePairIndex);
                       }}
                     >
-                      <span className="text-[#C3C3C0]">{from}-{to}</span>
+                      <span className="text-[#C3C3C0]">
+                        {from}-{to}
+                      </span>
                     </div>
                   );
                 })}
@@ -88,24 +75,30 @@ const MovesTable: React.FC<MovesTableProps> = ({ setResult }) => {
       {moves.length ? (
         <div className="w-full p-2 bg-[#20211D] flex items-center justify-between">
           <div className="flex gap-4">
-            <button className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1" onClick={() => {
-              if (setResult) {
-                setResult({ result: 'DRAW', by: 'Draw' });
-              }
-            }}>
+            <button
+              className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1"
+              onClick={() => {
+                if (setResult) {
+                  setResult({ result: 'DRAW', by: 'Draw' });
+                }
+              }}
+            >
               {<HandshakeIcon size={16} />}
               Draw
             </button>
-            <button className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1" onClick={() => {
-              if (socket && gameId) {
-                socket.send(
-                  JSON.stringify({
-                    type: 'EXIT_GAME',
-                    payload: { gameId },
-                  })
-                );
-              }
-            }}>
+            <button
+              className="flex items-center gap-2 hover:bg-[#32302E] rounded px-2.5 py-1"
+              onClick={() => {
+                if (socket && gameId) {
+                  socket.send(
+                    JSON.stringify({
+                      type: 'EXIT_GAME',
+                      payload: { gameId },
+                    })
+                  );
+                }
+              }}
+            >
               {<FlagIcon size={16} />}
               Resign
             </button>

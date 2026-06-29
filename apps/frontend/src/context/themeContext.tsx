@@ -1,5 +1,5 @@
-import { createContext, useEffect, useState } from "react";
-import { THEMES_DATA, THEME_DATA } from "@/constants/themes";
+import { createContext, useEffect, useState } from 'react';
+import { THEMES_DATA, THEME_DATA } from '@/constants/themes';
 
 export type THEME = 'Classic Walnut' | 'Midnight Cyber' | 'Emerald Tournament' | 'Nordic Frost' | 'Bubblegum Queen';
 
@@ -25,8 +25,7 @@ export const ThemeContext = createContext<THEME_CONTEXT | null>(null);
 export function ThemesProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<THEME>('Classic Walnut');
 
-  const currentTheme: THEME_DATA =
-    THEMES_DATA.find((t) => t.name === theme) || THEMES_DATA[0];
+  const currentTheme: THEME_DATA = THEMES_DATA.find((t) => t.name === theme) || THEMES_DATA[0];
 
   function updateTheme(newTheme: THEME) {
     setThemeState(newTheme);
@@ -36,9 +35,7 @@ export function ThemesProvider({ children }: { children: React.ReactNode }) {
 
   // setTheme accepts id or name (for AI landing page components)
   function setTheme(idOrName: string) {
-    const matched = THEMES_DATA.find(
-      (t) => t.id === idOrName || t.name === idOrName
-    );
+    const matched = THEMES_DATA.find((t) => t.id === idOrName || t.name === idOrName);
     if (matched) {
       updateTheme(matched.name as THEME);
     }
@@ -53,8 +50,6 @@ export function ThemesProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, updateTheme, currentTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, updateTheme, currentTheme, setTheme }}>{children}</ThemeContext.Provider>
   );
 }

@@ -10,4 +10,3 @@ v1Router.get('/', (req, res) => {
 });
 
 export default v1Router;
-

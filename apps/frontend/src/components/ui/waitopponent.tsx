@@ -8,12 +8,8 @@ export function Waitopponent() {
         </div>
       </div>
       <div className="text-center space-y-2">
-        <h5 className="text-lg font-bold text-white">
-          Searching for opponent...
-        </h5>
-        <p className="text-sm text-slate-400">
-          Please wait while we find you a worthy challenger
-        </p>
+        <h5 className="text-lg font-bold text-white">Searching for opponent...</h5>
+        <p className="text-sm text-slate-400">Please wait while we find you a worthy challenger</p>
       </div>
       <div className="flex gap-1.5">
         {[0, 1, 2].map((i) => (

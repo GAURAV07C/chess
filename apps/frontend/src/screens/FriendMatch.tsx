@@ -5,9 +5,7 @@ import { ClipboardCopyIcon } from 'lucide-react';
 
 const Modal = ({ children }: { children: React.ReactNode }) => (
   <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50">
-    <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-6 shadow-xl max-w-md w-full">
-      {children}
-    </div>
+    <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-6 shadow-xl max-w-md w-full">{children}</div>
   </div>
 );
 
@@ -19,11 +17,14 @@ export const FriendMatch: React.FC = () => {
   const [started, setStarted] = useState(false);
   const [waiting, setWaiting] = useState(false);
 
-  const sendInitGame = useCallback((gid?: string) => {
-    if (!socket) return;
-    const payload = gid ? { gameId: gid } : undefined;
-    socket.send(JSON.stringify({ type: 'init_game', payload }));
-  }, [socket]);
+  const sendInitGame = useCallback(
+    (gid?: string) => {
+      if (!socket) return;
+      const payload = gid ? { gameId: gid } : undefined;
+      socket.send(JSON.stringify({ type: 'init_game', payload }));
+    },
+    [socket]
+  );
 
   useEffect(() => {
     if (!socket) return;
@@ -82,7 +83,9 @@ export const FriendMatch: React.FC = () => {
       ) : (
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Create a Friend Match</h2>
-          <p className="text-slate-300 mb-4">Share the link below with a friend. When they open it, the game will start.</p>
+          <p className="text-slate-300 mb-4">
+            Share the link below with a friend. When they open it, the game will start.
+          </p>
           {waiting && (
             <div className="flex items-center justify-center space-x-2">
               <input

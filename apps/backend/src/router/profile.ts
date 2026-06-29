@@ -96,8 +96,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
       }
     }
 
-    const currentWinStreak =
-      stats.currentStreakType === 'win' ? stats.currentStreak : 0;
+    const currentWinStreak = stats.currentStreakType === 'win' ? stats.currentStreak : 0;
 
     res.json({
       user: {
@@ -119,4 +118,3 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 export default router;
-

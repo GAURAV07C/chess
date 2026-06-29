@@ -133,12 +133,7 @@ export class GameManager {
         }
 
         if (!availableGame) {
-          const game = new Game(
-            gameFromDb.whitePlayerId,
-            gameFromDb.blackPlayerId,
-            gameFromDb.id,
-            gameFromDb.startAt
-          );
+          const game = new Game(gameFromDb.whitePlayerId, gameFromDb.blackPlayerId, gameFromDb.id, gameFromDb.startAt);
           game.seedMoves(gameFromDb.moves || []);
           this.games.push(game);
           availableGame = game;
@@ -203,8 +198,7 @@ export class GameManager {
 
     if (game) {
       if (game.player2UserId) {
-        const isExistingPlayer =
-          user.userId === game.player1UserId || user.userId === game.player2UserId;
+        const isExistingPlayer = user.userId === game.player1UserId || user.userId === game.player2UserId;
         if (isExistingPlayer) {
           socketManager.addUser(user, game.gameId);
           user.socket.send(
@@ -282,20 +276,14 @@ export class GameManager {
       gameFromDb.blackPlayerId !== null &&
       gameFromDb.whitePlayerId !== null &&
       gameFromDb.blackPlayerId !== gameFromDb.whitePlayerId;
-    const isExistingPlayer =
-      user.userId === gameFromDb.whitePlayerId || user.userId === gameFromDb.blackPlayerId;
+    const isExistingPlayer = user.userId === gameFromDb.whitePlayerId || user.userId === gameFromDb.blackPlayerId;
 
     if (isAlreadyFull && !isExistingPlayer) {
       user.socket.send(JSON.stringify({ type: GAME_NOT_FOUND }));
       return;
     }
 
-    const newGame = new Game(
-      gameFromDb.whitePlayerId,
-      gameFromDb.blackPlayerId,
-      gameFromDb.id,
-      gameFromDb.startAt
-    );
+    const newGame = new Game(gameFromDb.whitePlayerId, gameFromDb.blackPlayerId, gameFromDb.id, gameFromDb.startAt);
     newGame.seedMoves(gameFromDb.moves || []);
     this.games.push(newGame);
     game = newGame;

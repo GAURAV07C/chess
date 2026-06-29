@@ -2,16 +2,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import {
-  Swords,
-  Flame,
-  Target,
-  LogOut,
-  Gamepad2,
-  Crown,
-  Palette,
-  ArrowLeft,
-} from 'lucide-react';
+import { Swords, Flame, Target, LogOut, Gamepad2, Crown, Palette, ArrowLeft } from 'lucide-react';
 import { useUserStore } from '@repo/store/userAtom';
 import { useThemeContext } from '@/hooks/useThemes';
 import { THEMES_DATA } from '@/constants/themes';
@@ -158,7 +149,9 @@ export const Profile = () => {
                   {profile.user.provider}
                 </span>
               </p>
-              <p className="text-slate-500 text-xs mt-1">Joined {new Date(profile.user.createdAt).toLocaleDateString()}</p>
+              <p className="text-slate-500 text-xs mt-1">
+                Joined {new Date(profile.user.createdAt).toLocaleDateString()}
+              </p>
             </div>
           </div>
 
@@ -175,10 +168,38 @@ export const Profile = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Matches', value: String(stats.totalGames), icon: Swords, color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' },
-            { label: 'Win Rate', value: `${winRate}%`, icon: Target, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-            { label: 'Win Streak', value: `${currentWinStreak}`, icon: Flame, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-            { label: 'Best Streak', value: `${stats.bestWinStreak}`, icon: Crown, color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
+            {
+              label: 'Total Matches',
+              value: String(stats.totalGames),
+              icon: Swords,
+              color: 'text-sky-400',
+              bg: 'bg-sky-500/10',
+              border: 'border-sky-500/20',
+            },
+            {
+              label: 'Win Rate',
+              value: `${winRate}%`,
+              icon: Target,
+              color: 'text-emerald-400',
+              bg: 'bg-emerald-500/10',
+              border: 'border-emerald-500/20',
+            },
+            {
+              label: 'Win Streak',
+              value: `${currentWinStreak}`,
+              icon: Flame,
+              color: 'text-orange-400',
+              bg: 'bg-orange-500/10',
+              border: 'border-orange-500/20',
+            },
+            {
+              label: 'Best Streak',
+              value: `${stats.bestWinStreak}`,
+              icon: Crown,
+              color: 'text-yellow-400',
+              bg: 'bg-yellow-500/10',
+              border: 'border-yellow-500/20',
+            },
           ].map((stat, idx) => {
             const Icon = stat.icon;
             return (
@@ -199,11 +220,7 @@ export const Profile = () => {
           })}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 gap-4"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-3 gap-4">
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
             <p className="text-xs uppercase tracking-widest text-emerald-400">Wins</p>
             <p className="text-xl font-bold text-white mt-1">{stats.wins}</p>
@@ -218,11 +235,7 @@ export const Profile = () => {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-3"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <div className="flex items-center gap-2">
             <Palette className="w-4 h-4 text-slate-300" />
             <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Theme</h3>
@@ -235,27 +248,29 @@ export const Profile = () => {
                   key={theme.id}
                   onClick={() => updateTheme(theme.name)}
                   className={`group relative rounded-2xl border p-3 text-left transition-all hover:scale-[1.03] focus:outline-none ${
-                    isActive ? 'border-white/80 bg-white/10 ring-1 ring-white/60' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                    isActive
+                      ? 'border-white/80 bg-white/10 ring-1 ring-white/60'
+                      : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
                   }`}
                 >
                   <div
                     className="h-10 w-10 rounded-lg border border-slate-800 shadow-sm"
                     style={{ backgroundColor: theme.accentColor }}
                   />
-                  <p className={`mt-3 text-xs font-bold transition-colors ${
-                    isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
-                  }`}>{theme.name}</p>
+                  <p
+                    className={`mt-3 text-xs font-bold transition-colors ${
+                      isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
+                    }`}
+                  >
+                    {theme.name}
+                  </p>
                 </button>
               );
             })}
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-3"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Recent Games</h3>
           <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
             {recentGames.map((game) => {
@@ -274,8 +289,8 @@ export const Profile = () => {
                         isDraw
                           ? 'bg-slate-500/10 text-slate-300'
                           : won
-                          ? 'bg-amber-500/10 text-amber-400'
-                          : 'bg-rose-500/10 text-rose-400'
+                            ? 'bg-amber-500/10 text-amber-400'
+                            : 'bg-rose-500/10 text-rose-400'
                       }`}
                     >
                       <Gamepad2 className="w-5 h-5" />
@@ -287,11 +302,7 @@ export const Profile = () => {
                   </div>
                   <span
                     className={`text-sm font-bold ${
-                      isDraw
-                        ? 'text-slate-300'
-                        : won
-                        ? 'text-amber-400'
-                        : 'text-rose-400'
+                      isDraw ? 'text-slate-300' : won ? 'text-amber-400' : 'text-rose-400'
                     }`}
                   >
                     {isDraw ? 'Draw' : won ? 'Win' : 'Loss'}

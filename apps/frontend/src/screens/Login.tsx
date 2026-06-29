@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useUserStore } from '@repo/store/userAtom';
 import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL ?? 'http://localhost:3000';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setUser = useUserStore((state: { setUser: any }) => state.setUser);
   const [name, setName] = useState('');
   const [isGuest, setIsGuest] = useState(false);
+
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const google = () => {
     window.open(`${BACKEND_URL}/auth/google`, '_self');
@@ -30,7 +33,7 @@ const Login = () => {
     });
     const user = await response.json();
     setUser(user);
-    navigate('/dashboard');
+    navigate(from, { replace: true });
   };
 
   return (

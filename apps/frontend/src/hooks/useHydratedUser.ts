@@ -3,7 +3,6 @@ import { User, BACKEND_URL, useUserStore } from '@repo/store';
 
 export const prefetchUser = async (): Promise<User | null> => {
   try {
-    
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

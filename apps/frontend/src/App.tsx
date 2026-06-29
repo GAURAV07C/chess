@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { Landing } from './screens/Landing';
 import { Game } from './screens/Game';
 import { Dashboard } from './screens/Dashboard';
@@ -17,8 +17,9 @@ import { BotPlay } from './screens/BotPlay';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, mounted } = useHydratedUser();
+  const location = useLocation();
   if (!mounted) return <Loader />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return <>{children}</>;
 }
 

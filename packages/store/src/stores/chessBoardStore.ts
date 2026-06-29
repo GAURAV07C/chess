@@ -19,7 +19,10 @@ export const useChessBoardStore = create<ChessBoardState>((set) => ({
   userSelectedMoveIndex: null,
   setIsBoardFlipped: (isBoardFlipped) =>
     set((state) => ({
-      isBoardFlipped: typeof isBoardFlipped === 'function' ? (isBoardFlipped as (prev: boolean) => boolean)(state.isBoardFlipped) : isBoardFlipped,
+      isBoardFlipped:
+        typeof isBoardFlipped === 'function'
+          ? (isBoardFlipped as (prev: boolean) => boolean)(state.isBoardFlipped)
+          : isBoardFlipped,
     })),
   setMoves: (moves) =>
     set((state) => ({
@@ -27,22 +30,24 @@ export const useChessBoardStore = create<ChessBoardState>((set) => ({
     })),
   setUserSelectedMoveIndex: (userSelectedMoveIndex) =>
     set((state) => ({
-      userSelectedMoveIndex: typeof userSelectedMoveIndex === 'function' ? (userSelectedMoveIndex as (prev: number | null) => number | null)(state.userSelectedMoveIndex) : userSelectedMoveIndex,
+      userSelectedMoveIndex:
+        typeof userSelectedMoveIndex === 'function'
+          ? (userSelectedMoveIndex as (prev: number | null) => number | null)(state.userSelectedMoveIndex)
+          : userSelectedMoveIndex,
     })),
-  toggleBoardFlipped: () =>
-    set((state) => ({ isBoardFlipped: !state.isBoardFlipped })),
+  toggleBoardFlipped: () => set((state) => ({ isBoardFlipped: !state.isBoardFlipped })),
   incrementUserSelectedMoveIndex: () =>
     set((state) => ({
-      userSelectedMoveIndex: state.userSelectedMoveIndex !== null
-        ? state.userSelectedMoveIndex + 1 >= state.moves.length - 1
-          ? state.moves.length - 1
-          : state.userSelectedMoveIndex + 1
-        : null,
+      userSelectedMoveIndex:
+        state.userSelectedMoveIndex !== null
+          ? state.userSelectedMoveIndex + 1 >= state.moves.length - 1
+            ? state.moves.length - 1
+            : state.userSelectedMoveIndex + 1
+          : null,
     })),
   decrementUserSelectedMoveIndex: () =>
     set((state) => ({
-      userSelectedMoveIndex: state.userSelectedMoveIndex !== null
-        ? state.userSelectedMoveIndex - 1
-        : state.moves.length - 2,
+      userSelectedMoveIndex:
+        state.userSelectedMoveIndex !== null ? state.userSelectedMoveIndex - 1 : state.moves.length - 2,
     })),
 }));
