@@ -179,6 +179,9 @@ export class Game {
         blackPlayer: true,
       },
     });
+
+    this.resetMoveTimer();
+    this.resetAbandonTimer();
   }
 
   async addMoveToDb(move: Move, moveTimestamp: Date) {
@@ -221,6 +224,15 @@ export class Game {
     }
 
     const moveTimestamp = new Date(Date.now());
+    const turn = this.board.turn();
+    const activeConsumed =
+      (turn === 'w' ? this.player1TimeConsumed : this.player2TimeConsumed) +
+      (moveTimestamp.getTime() - this.lastMoveTime.getTime());
+
+    if (activeConsumed >= GAME_TIME_MS) {
+      this.endGame('TIME_UP', turn === 'b' ? 'WHITE_WINS' : 'BLACK_WINS');
+      return;
+    }
 
     try {
       if (isPromoting(this.board, move.from, move.to)) {
@@ -297,10 +309,16 @@ export class Game {
   async resetMoveTimer() {
     if (this.moveTimer) {
       clearTimeout(this.moveTimer);
+      this.moveTimer = null;
     }
     this.broadcastTime();
     const turn = this.board.turn();
     const timeLeft = GAME_TIME_MS - (turn === 'w' ? this.player1TimeConsumed : this.player2TimeConsumed);
+
+    if (timeLeft <= 0) {
+      this.endGame('TIME_UP', turn === 'b' ? 'WHITE_WINS' : 'BLACK_WINS');
+      return;
+    }
 
     this.moveTimer = setTimeout(() => {
       this.endGame('TIME_UP', turn === 'b' ? 'WHITE_WINS' : 'BLACK_WINS');

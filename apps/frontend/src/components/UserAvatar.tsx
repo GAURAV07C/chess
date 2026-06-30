@@ -1,16 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, TrendingUp, Swords } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useUser } from '@repo/store/useUser';
-import { Metadata, Player } from '../screens/gameConstants';
+import { Metadata, Player } from '@/screens/gameConstants';
+import { ProfileStats } from '@/screens/profile/ProfileStats';
+import { GameHistory } from '@/screens/profile/GameHistory';
 
 interface Profile {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    provider: string;
+    rating: number;
+    username: string;
+    createdAt: string;
+  };
   stats: {
+    totalGames: number;
     wins: number;
     losses: number;
     draws: number;
+    currentStreak: number;
+    currentStreakType: 'win' | 'loss' | null;
+    bestWinStreak: number;
   };
+  currentWinStreak: number;
+  recentGames: {
+    id: string;
+    opponentName: string;
+    result: string;
+    color: string;
+  }[];
 }
 
 interface UserAvatarProps {
@@ -18,11 +40,14 @@ interface UserAvatarProps {
   self?: boolean;
 }
 
+const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL ?? 'http://localhost:3000';
+
 export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
   const user = useUser();
   const [showProfile, setShowProfile] = useState(false);
-  const [profile] = useState<Profile | null>(null);
-  const [loading] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   let player: Player | null = null;
   if (gameMetadata && user) {
@@ -33,8 +58,47 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
     }
   }
 
+  useEffect(() => {
+    if (!showProfile || !player) return;
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+    setProfile(null);
+    fetch(`${BACKEND_URL}/v1/profile/${player.id}`, {
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text().catch(() => 'Failed to load profile');
+          throw new Error(text || 'Failed to load profile');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted) {
+          setProfile(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'Could not load profile');
+          setLoading(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [showProfile, player]);
+
   if (!gameMetadata || !player) return null;
   const avatarLetter = player.name.charAt(0).toUpperCase();
+
+  const winRate = profile
+    ? profile.stats.totalGames > 0
+      ? ((profile.stats.wins / profile.stats.totalGames) * 100).toFixed(1)
+      : '0'
+    : '0';
 
   return (
     <>
@@ -77,31 +141,29 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                   <p className="text-slate-400 text-sm">{player.isGuest ? 'Guest' : 'Player'}</p>
                 </div>
 
-                {loading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : profile ? (
-                  <div className="mt-4 flex-1 overflow-auto">
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-slate-800/60">
-                        <Trophy className="w-4 h-4 text-amber-400 mx-auto" />
-                        <p className="text-white font-bold">{profile.stats.wins}</p>
-                        <p className="text-slate-500 text-[10px]">Wins</p>
-                      </div>
-                      <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-slate-800/60">
-                        <Swords className="w-4 h-4 text-rose-400 mx-auto" />
-                        <p className="text-white font-bold">{profile.stats.losses}</p>
-                        <p className="text-slate-500 text-[10px]">Losses</p>
-                      </div>
-                      <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-slate-800/60">
-                        <TrendingUp className="w-4 h-4 text-sky-400 mx-auto" />
-                        <p className="text-white font-bold">{profile.stats.draws}</p>
-                        <p className="text-slate-500 text-[10px]">Draws</p>
+                <div className="mt-4 flex-1 overflow-auto">
+                  {loading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : error || !profile ? (
+                    <p className="text-slate-500 text-sm py-6 text-center">{error || 'No profile data'}</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <ProfileStats
+                        stats={profile.stats}
+                        winRate={winRate}
+                        currentWinStreak={profile.currentWinStreak}
+                      />
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-2">
+                          Recent Games
+                        </h3>
+                        <GameHistory games={profile.recentGames} />
                       </div>
                     </div>
-                  </div>
-                ) : null}
+                  )}
+                </div>
               </motion.div>
             </motion.div>
           </AnimatePresence>,
