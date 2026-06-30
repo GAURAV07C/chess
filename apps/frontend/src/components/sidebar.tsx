@@ -34,10 +34,7 @@ export default function Sidebar({ className }: SidebarProps) {
   }, [isOpen, toggle]);
   return (
     <nav
-      className={cn(
-        `relative hidden h-screen pt-4 md:block bg-bgAuxiliary1 text-white w-12 lg:w-36 top-0 relative sticky`,
-        className
-      )}
+      className={cn(`relative hidden h-screen pt-4 md:block bg-bgAuxiliary1 text-white w-12 lg:w-36 top-0 `, className)}
     >
       <div className="flex flex-col h-full justify-between">
         <div className="flex flex-col justify-start">

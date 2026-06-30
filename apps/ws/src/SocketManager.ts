@@ -44,11 +44,7 @@ export class SocketManager {
 
   broadcast(roomId: string, message: string) {
     const users = this.interestedSockets.get(roomId);
-    if (!users) {
-      console.error('No users in room?');
-      return;
-    }
-
+    if (!users || users.length === 0) return;
     users.forEach((user) => {
       user.socket.send(message);
     });
@@ -56,10 +52,7 @@ export class SocketManager {
 
   removeUser(user: User) {
     const roomId = this.userRoomMappping.get(user.userId);
-    if (!roomId) {
-      console.error('User was not interested in any room?');
-      return;
-    }
+    if (!roomId) return;
     const room = this.interestedSockets.get(roomId) || [];
     const remainingUsers = room.filter((u) => u.userId !== user.userId);
     this.interestedSockets.set(roomId, remainingUsers);
@@ -72,12 +65,11 @@ export class SocketManager {
   sendToUser(userId: string, message: string) {
     for (const [, roomUsers] of this.interestedSockets.entries()) {
       const user = roomUsers.find((u) => u.userId === userId);
-      if (user) {
+      if (user && user.socket.readyState === WebSocket.OPEN) {
         user.socket.send(message);
         return;
       }
     }
-    console.error('User not found in any room:', userId);
   }
 }
 

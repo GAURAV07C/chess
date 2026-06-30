@@ -71,10 +71,7 @@ export const Game = () => {
   const [player1TimeConsumed, setPlayer1TimeConsumed] = useState(0);
   const [player2TimeConsumed, setPlayer2TimeConsumed] = useState(0);
   const [gameID, setGameID] = useState('');
-  const [incomingMessages, setIncomingMessages] = useState<
-    Array<{ id: string; senderName: string; content: string; hasEmoji: boolean }>
-  >([]);
-  const [activeEmoji, setActiveEmoji] = useState<{ id: string; emoji: string; senderName: string } | null>(null);
+
   const setMoves = useChessBoardStore((state) => state.setMoves);
   const userSelectedMoveIndex = useChessBoardStore((state) => state.userSelectedMoveIndex);
   const userSelectedMoveIndexRef = useRef(userSelectedMoveIndex);
@@ -108,6 +105,7 @@ export const Game = () => {
             blackPlayer: message.payload.blackPlayer,
             whitePlayer: message.payload.whitePlayer,
           });
+
           break;
         case MOVE:
           const { move, player1TimeConsumed, player2TimeConsumed } = message.payload;
@@ -207,33 +205,6 @@ export const Game = () => {
     }
   }, [chess, gameId, navigate, setMoves, socket]);
 
-  // Chat message listener — runs parallel to game socket
-  useEffect(() => {
-    if (!socket) return;
-    const handler = (event: MessageEvent) => {
-      try {
-        const message = JSON.parse(event.data);
-        if (message.type === 'chat_message') {
-          setIncomingMessages((prev) => [
-            ...prev,
-            { id: message.id, senderName: message.senderName, content: message.content, hasEmoji: message.hasEmoji },
-          ]);
-          if (message.hasEmoji) {
-            setActiveEmoji({ id: message.id, emoji: message.content, senderName: message.senderName });
-            setTimeout(() => setActiveEmoji(null), 2500);
-          }
-          setTimeout(() => {
-            setIncomingMessages((prev) => prev.filter((m) => m.id !== message.id));
-          }, 4000);
-        }
-      } catch (e) {
-        console.error('Chat parse error', e);
-      }
-    };
-    socket.addEventListener('message', handler);
-    return () => socket.removeEventListener('message', handler);
-  }, [socket, user]);
-
   useEffect(() => {
     if (started) {
       const interval = setInterval(() => {
@@ -307,38 +278,6 @@ export const Game = () => {
           }}
         />
       )}
-
-      {/* Floating Message Popup — Ludo King style */}
-      {started && (incomingMessages.length > 0 || activeEmoji) && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none">
-          {activeEmoji && (
-            <div key={activeEmoji.id} className="animate-[emojiFloat_2s_ease-out_forwards] text-5xl drop-shadow-2xl">
-              {activeEmoji.emoji}
-            </div>
-          )}
-          {incomingMessages.map((msg) => (
-            <div key={msg.id} className="pointer-events-auto animate-[msgPop_0.4s_ease-out]">
-              <div className="bg-slate-900/90 border border-slate-700/50 backdrop-blur-md rounded-2xl px-5 py-3 shadow-2xl max-w-[260px]">
-                <p className="text-[11px] font-bold text-amber-400 mb-1">{msg.senderName}</p>
-                <p className="text-sm text-white break-words leading-relaxed">{msg.content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Inline keyframes for popup animations */}
-      <style>{`
-        @keyframes emojiFloat {
-          0% { opacity: 1; transform: translateY(0) scale(1); }
-          50% { opacity: 1; transform: translateY(-40px) scale(1.3); }
-          100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
-        }
-        @keyframes msgPop {
-          0% { opacity: 0; transform: translateY(-20px) scale(0.9); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-      `}</style>
 
       {/* Turn Indicator */}
       <div className="w-full flex justify-center pt-6 mb-2">

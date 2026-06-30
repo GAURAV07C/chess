@@ -1,44 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Trophy, TrendingUp, Swords } from 'lucide-react';
 import { useUser } from '@repo/store/useUser';
 import { Metadata, Player } from '../screens/gameConstants';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, TrendingUp, Swords, MessageSquare, Smile, Send } from 'lucide-react';
-import { useSocket } from '../hooks/useSocket';
-import { useParams } from 'react-router-dom';
 
-interface RecentGame {
-  id: string;
-  opponentId: string;
-  opponentName: string | null;
-  result: string;
-  color: string;
-  date: string;
-}
-
-interface UserStats {
-  totalGames: number;
-  wins: number;
-  losses: number;
-  draws: number;
-  currentStreak: number;
-  currentStreakType: 'win' | 'loss' | null;
-  bestWinStreak: number;
-}
-
-interface UserProfile {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    provider: string;
-    rating: number;
-    username: string | null;
-    createdAt: string;
+interface Profile {
+  stats: {
+    wins: number;
+    losses: number;
+    draws: number;
   };
-  stats: UserStats;
-  currentWinStreak: number;
-  recentGames: RecentGame[];
 }
 
 interface UserAvatarProps {
@@ -48,405 +20,30 @@ interface UserAvatarProps {
 
 export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
   const user = useUser();
-  const socket = useSocket();
-  const { gameId } = useParams();
   const [showProfile, setShowProfile] = useState(false);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const [showChatModal, setShowChatModal] = useState(false);
-  const [chatBlocked, setChatBlocked] = useState(false);
-  const [emojiBlocked, setEmojiBlocked] = useState(false);
-  const [customChatAccepted, setCustomChatAccepted] = useState(false);
-  const [customChatPending, setCustomChatPending] = useState(false);
-  const [messages, setMessages] = useState<Array<{ id: string; senderId: string; content: string; hasEmoji: boolean }>>(
-    []
-  );
-  const [customText, setCustomText] = useState('');
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [lastFloatingMsg, setLastFloatingMsg] = useState<{ content: string; hasEmoji: boolean } | null>(null);
+  const [profile] = useState<Profile | null>(null);
+  const [loading] = useState(false);
 
   let player: Player | null = null;
-  if (gameMetadata) {
-    if (gameMetadata.blackPlayer.id === user?.id) {
+  if (gameMetadata && user) {
+    if (gameMetadata.blackPlayer.id === user.id) {
       player = self ? gameMetadata.blackPlayer : gameMetadata.whitePlayer;
     } else {
       player = self ? gameMetadata.whitePlayer : gameMetadata.blackPlayer;
     }
   }
 
-  const targetPlayerId =
-    gameMetadata && user
-      ? gameMetadata.blackPlayer.id === user.id
-        ? gameMetadata.whitePlayer.id
-        : gameMetadata.blackPlayer.id
-      : null;
-
-  useEffect(() => {
-    if (!socket || !targetPlayerId || !gameId) return;
-    setMessages([]);
-    setChatBlocked(false);
-    setEmojiBlocked(false);
-    setCustomChatAccepted(false);
-    setCustomChatPending(false);
-
-    const handler = (event: MessageEvent) => {
-      try {
-        const message = JSON.parse(event.data);
-        switch (message.type) {
-          case 'chat_message':
-            setMessages((prev) => [
-              ...prev,
-              { id: message.id, senderId: message.senderId, content: message.content, hasEmoji: message.hasEmoji },
-            ]);
-            if (message.senderId !== user?.id) {
-              setLastFloatingMsg({ content: message.content, hasEmoji: message.hasEmoji });
-              setTimeout(() => setLastFloatingMsg(null), 3000);
-            }
-            break;
-          case 'chat_blocked':
-            setChatBlocked(true);
-            break;
-          case 'chat_unblocked':
-            setChatBlocked(false);
-            break;
-          case 'emoji_blocked':
-            setEmojiBlocked(true);
-            break;
-          case 'emoji_unblocked':
-            setEmojiBlocked(false);
-            break;
-          case 'custom_chat_request':
-            setCustomChatPending(true);
-            break;
-          case 'custom_chat_accepted':
-            setCustomChatAccepted(true);
-            setCustomChatPending(false);
-            break;
-          case 'custom_chat_rejected':
-            setCustomChatAccepted(false);
-            setCustomChatPending(false);
-            break;
-        }
-      } catch (e) {
-        console.error('Failed to parse chat message', e);
-      }
-    };
-
-    socket.addEventListener('message', handler);
-    return () => socket.removeEventListener('message', handler);
-  }, [socket, targetPlayerId, gameId, user?.id]);
-
-  const sendChatAction = (type: string, payload: Record<string, string>) => {
-    if (!socket || !targetPlayerId) return;
-    socket.send(JSON.stringify({ type, payload }));
-  };
-
-  const handleBlockChat = () => {
-    sendChatAction('BLOCK_CHAT', { targetUserId: targetPlayerId as string });
-    setChatBlocked(true);
-    setShowChatModal(false);
-  };
-
-  const handleUnblockChat = () => {
-    sendChatAction('UNBLOCK_CHAT', { targetUserId: targetPlayerId as string });
-    setChatBlocked(false);
-    setShowChatModal(false);
-  };
-
-  const handleBlockEmoji = () => {
-    sendChatAction('BLOCK_EMOJI', { targetUserId: targetPlayerId as string });
-    setEmojiBlocked(true);
-    setShowChatModal(false);
-  };
-
-  const handleUnblockEmoji = () => {
-    sendChatAction('UNBLOCK_EMOJI', { targetUserId: targetPlayerId as string });
-    setEmojiBlocked(false);
-    setShowChatModal(false);
-  };
-
-  const handleRequestCustomChat = () => {
-    sendChatAction('REQUEST_CUSTOM_CHAT', { targetUserId: targetPlayerId as string });
-    setCustomChatPending(true);
-    setShowChatModal(false);
-  };
-
-  const sendPredefined = (text: string) => {
-    if (!socket || !targetPlayerId) return;
-    socket.send(
-      JSON.stringify({
-        type: 'SEND_PREDEFINED_MESSAGE',
-        payload: { chatId: `chat_${user?.id}_${targetPlayerId}`, predefinedId: text },
-      })
-    );
-    setShowChatModal(false);
-  };
-
-  const sendCustom = () => {
-    if (!socket || !targetPlayerId || !customText.trim()) return;
-    socket.send(
-      JSON.stringify({
-        type: 'SEND_CUSTOM_MESSAGE',
-        payload: { chatId: `chat_${user?.id}_${targetPlayerId}`, content: customText.trim() },
-      })
-    );
-    setCustomText('');
-    setShowChatModal(false);
-  };
-
-  const sendEmoji = (emoji: string) => {
-    if (!socket || !targetPlayerId) return;
-    socket.send(
-      JSON.stringify({
-        type: 'SEND_CUSTOM_MESSAGE',
-        payload: { chatId: `chat_${user?.id}_${targetPlayerId}`, content: emoji },
-      })
-    );
-    setShowEmojiPicker(false);
-  };
-
-  const QUICK_MESSAGES = [
-    { id: 'good_luck', text: 'Good luck!' },
-    { id: 'well_played', text: 'Well played!' },
-    { id: 'nice_move', text: 'Nice move!' },
-    { id: 'thanks', text: 'Thanks!' },
-    { id: 'good_game', text: 'Good game!' },
-  ];
-
-  useEffect(() => {
-    if (!showProfile || !player?.id) {
-      setProfile(null);
-      return;
-    }
-
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`http://localhost:3000/v1/profile/${player.id}`, {
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setProfile(data);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [showProfile, player]);
-
-  if (!gameMetadata) return null;
-
-  const avatarLetter = player?.name?.charAt(0).toUpperCase() || '?';
-
-  const getResultColor = (result: string) => {
-    if (result === 'WHITE_WINS') return 'text-emerald-400';
-    if (result === 'BLACK_WINS') return 'text-rose-400';
-    return 'text-slate-400';
-  };
-
-  const getResultLabel = (result: string, color: string) => {
-    if (result === 'DRAW') return 'Draw';
-    const won = (color === 'white' && result === 'WHITE_WINS') || (color === 'black' && result === 'BLACK_WINS');
-    return won ? 'Win' : 'Loss';
-  };
+  if (!gameMetadata || !player) return null;
+  const avatarLetter = player.name.charAt(0).toUpperCase();
 
   return (
     <>
-      <div
-        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => setShowProfile(true)}
-        title="View Profile"
-      >
+      <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowProfile(true)}>
         <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-slate-950 font-bold text-sm">
           {avatarLetter}
         </div>
-        <span className="text-white text-sm font-medium">{player?.name}</span>
+        <span className="text-white text-sm font-medium">{player.name}</span>
       </div>
-
-      {!self && (
-        <>
-          {/* Floating last message above chat icon */}
-          {lastFloatingMsg && (
-            <div className="relative mb-1 animate-[msgPop_0.4s_ease-out]">
-              <div className="bg-slate-900/95 border border-slate-700/50 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-xl max-w-[180px]">
-                <p className="text-[11px] text-white break-words leading-tight">
-                  {lastFloatingMsg.hasEmoji ? lastFloatingMsg.content : lastFloatingMsg.content}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Chat & Emoji icons below opponent avatar */}
-          <div className="flex items-center gap-2 mt-1">
-            <button
-              onClick={() => setShowChatModal(true)}
-              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-              title="Chat"
-            >
-              <MessageSquare size={14} />
-            </button>
-            <button
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-              title="Emoji"
-            >
-              <Smile size={14} />
-            </button>
-          </div>
-
-          {/* Emoji Picker */}
-          {showEmojiPicker && !self && (
-            <div className="absolute z-50 bottom-full mb-2 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl p-3 w-64">
-              <div className="grid grid-cols-8 gap-1.5">
-                {[
-                  '👍',
-                  '👎',
-                  '👏',
-                  '🔥',
-                  '❤️',
-                  '😂',
-                  '😮',
-                  '😢',
-                  '😡',
-                  '👀',
-                  '💪',
-                  '🙏',
-                  '😍',
-                  '🤔',
-                  '😎',
-                  '🥳',
-                  '😭',
-                  '💯',
-                  '✨',
-                  '🎉',
-                  '💪',
-                  '🤝',
-                  '👋',
-                  '🙌',
-                ].map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => sendEmoji(emoji)}
-                    className="text-xl hover:bg-slate-800 rounded-lg p-1.5 transition-colors"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Chat Modal */}
-          {showChatModal &&
-            createPortal(
-              <AnimatePresence>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-                  onClick={() => setShowChatModal(false)}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-slate-950/95 border border-slate-800 rounded-2xl p-5 max-w-sm w-full mx-4 relative shadow-2xl"
-                  >
-                    <button
-                      onClick={() => setShowChatModal(false)}
-                      className="absolute top-3 right-3 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer z-10"
-                    >
-                      <X size={20} />
-                    </button>
-
-                    <h3 className="text-lg font-bold text-white mb-2">Chat with {player?.name}</h3>
-
-                    {/* Messages */}
-                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar space-y-2 mb-3 bg-slate-900/50 rounded-xl p-3 border border-slate-800">
-                      {messages.length === 0 && <p className="text-xs text-slate-500 text-center">No messages yet</p>}
-                      {messages.map((msg) => (
-                        <div
-                          key={msg.id}
-                          className={`text-xs px-3 py-1.5 rounded-xl ${
-                            msg.senderId === user?.id
-                              ? 'bg-amber-500/20 text-amber-100 ml-auto max-w-[80%]'
-                              : 'bg-slate-800 text-slate-200 max-w-[80%]'
-                          }`}
-                        >
-                          <span className="font-bold">{msg.senderId === user?.id ? 'You' : player?.name}</span>
-                          <p className="mt-0.5">{msg.content}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-3">
-                      {/* Predefined messages */}
-                      <div className="flex flex-wrap gap-2">
-                        {QUICK_MESSAGES.map((q) => (
-                          <button
-                            key={q.id}
-                            onClick={() => sendPredefined(q.id)}
-                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs border border-slate-700 transition-colors"
-                          >
-                            {q.text}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Custom message input */}
-                      {customChatAccepted && (
-                        <div className="flex gap-2">
-                          <input
-                            value={customText}
-                            onChange={(e) => setCustomText(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && sendCustom()}
-                            placeholder="Type a message..."
-                            disabled={chatBlocked}
-                            className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 disabled:opacity-50"
-                          />
-                          <button
-                            onClick={sendCustom}
-                            disabled={chatBlocked || !customText.trim()}
-                            className="p-2 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 text-slate-950 rounded-lg transition-colors"
-                          >
-                            <Send size={14} />
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Request custom chat */}
-                      {!customChatAccepted && !customChatPending && (
-                        <button
-                          onClick={handleRequestCustomChat}
-                          className="w-full px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-colors"
-                        >
-                          Request Custom Chat
-                        </button>
-                      )}
-                      {customChatPending && (
-                        <p className="text-[11px] text-slate-400 text-center">Custom chat request pending...</p>
-                      )}
-                      {customChatAccepted && (
-                        <p className="text-[11px] text-emerald-400 text-center">Custom chat active</p>
-                      )}
-                    </div>
-                  </motion.div>
-                </motion.div>
-              </AnimatePresence>,
-              document.body
-            )}
-        </>
-      )}
 
       {showProfile &&
         createPortal(
@@ -455,39 +52,29 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
               onClick={() => setShowProfile(false)}
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-slate-950/95 border border-slate-800 rounded-2xl p-5 max-w-sm w-full mx-4 relative shadow-2xl max-h-[85vh] flex flex-col"
+                className="bg-slate-950 border border-slate-800 rounded-2xl p-5 max-w-sm w-full shadow-2xl max-h-[85vh] flex flex-col"
               >
                 <button
                   onClick={() => setShowProfile(false)}
-                  className="absolute top-3 right-3 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer z-10"
-                  title="Close"
+                  className="absolute top-3 right-3 text-slate-400 hover:text-white"
                 >
                   <X size={20} />
                 </button>
 
-                <div className="text-center space-y-4">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-slate-950 text-3xl font-serif font-black mx-auto mt-2">
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-slate-950 text-3xl font-black mx-auto">
                     {avatarLetter}
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">{player?.name}</h3>
-                    <p className="text-slate-400 text-sm mt-2">
-                      {player?.isGuest ? 'Guest Player' : 'Registered Player'}
-                    </p>
-                    {profile?.user.rating && (
-                      <p className="text-amber-400 text-sm font-bold mt-1">Rating: {profile.user.rating}</p>
-                    )}
-                  </div>
+                  <h3 className="text-xl font-bold text-white mt-3">{player.name}</h3>
+                  <p className="text-slate-400 text-sm">{player.isGuest ? 'Guest' : 'Player'}</p>
                 </div>
 
                 {loading ? (
@@ -495,239 +82,26 @@ export const UserAvatar = ({ gameMetadata, self }: UserAvatarProps) => {
                     <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : profile ? (
-                  <div className="mt-4 flex-1 overflow-hidden flex flex-col">
+                  <div className="mt-4 flex-1 overflow-auto">
                     <div className="grid grid-cols-3 gap-2 mb-4">
                       <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-slate-800/60">
-                        <Trophy className="w-4 h-4 text-amber-400 mx-auto mb-1" />
-                        <p className="text-white font-bold text-lg">{profile.stats.wins}</p>
-                        <p className="text-slate-500 text-xs">Wins</p>
+                        <Trophy className="w-4 h-4 text-amber-400 mx-auto" />
+                        <p className="text-white font-bold">{profile.stats.wins}</p>
+                        <p className="text-slate-500 text-[10px]">Wins</p>
                       </div>
                       <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-slate-800/60">
-                        <Swords className="w-4 h-4 text-rose-400 mx-auto mb-1" />
-                        <p className="text-white font-bold text-lg">{profile.stats.losses}</p>
-                        <p className="text-slate-500 text-xs">Losses</p>
+                        <Swords className="w-4 h-4 text-rose-400 mx-auto" />
+                        <p className="text-white font-bold">{profile.stats.losses}</p>
+                        <p className="text-slate-500 text-[10px]">Losses</p>
                       </div>
                       <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-slate-800/60">
-                        <TrendingUp className="w-4 h-4 text-sky-400 mx-auto mb-1" />
-                        <p className="text-white font-bold text-lg">{profile.stats.draws}</p>
-                        <p className="text-slate-500 text-xs">Draws</p>
+                        <TrendingUp className="w-4 h-4 text-sky-400 mx-auto" />
+                        <p className="text-white font-bold">{profile.stats.draws}</p>
+                        <p className="text-slate-500 text-[10px]">Draws</p>
                       </div>
                     </div>
-
-                    {/* Profile Block/Unblock Section */}
-                    {!self && (
-                      <div className="border-t border-slate-800 pt-3 mt-1">
-                        <p className="text-slate-300 text-xs font-semibold mb-2 tracking-wide uppercase">Actions</p>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400 text-xs">Chat</span>
-                            {chatBlocked ? (
-                              <button
-                                onClick={handleUnblockChat}
-                                className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[11px] font-bold hover:bg-emerald-500/30 transition-colors"
-                              >
-                                Unblock
-                              </button>
-                            ) : (
-                              <button
-                                onClick={handleBlockChat}
-                                className="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-md text-[11px] font-bold hover:bg-rose-500/30 transition-colors"
-                              >
-                                Block
-                              </button>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400 text-xs">Emoji</span>
-                            {emojiBlocked ? (
-                              <button
-                                onClick={handleUnblockEmoji}
-                                className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[11px] font-bold hover:bg-emerald-500/30 transition-colors"
-                              >
-                                Unblock
-                              </button>
-                            ) : (
-                              <button
-                                onClick={handleBlockEmoji}
-                                className="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-md text-[11px] font-bold hover:bg-rose-500/30 transition-colors"
-                              >
-                                Block
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {profile.recentGames.length > 0 && (
-                      <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <p className="text-slate-300 text-sm font-semibold mb-2">Recent Games</p>
-                        <div className="space-y-2">
-                          {profile.recentGames.map((game) => (
-                            <div
-                              key={game.id}
-                              className="flex items-center justify-between bg-slate-900/40 rounded-lg px-3 py-2 border border-slate-800/50"
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="text-white text-sm font-medium truncate">
-                                  vs {game.opponentName || 'Unknown'}
-                                </p>
-                                <p className="text-slate-500 text-xs truncate">
-                                  {game.color === 'white' ? 'White' : 'Black'} •{' '}
-                                  {new Date(game.date).toLocaleDateString()}
-                                </p>
-                              </div>
-                              <span className={`text-xs font-bold ${getResultColor(game.result)}`}>
-                                {getResultLabel(game.result, game.color)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ) : null}
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>,
-          document.body
-        )}
-
-      {/* Chat Settings Modal */}
-      {showChatModal &&
-        createPortal(
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-              onClick={() => setShowChatModal(false)}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-slate-950/95 border border-slate-800 rounded-2xl p-5 max-w-sm w-full mx-4 relative shadow-2xl"
-              >
-                <button
-                  onClick={() => setShowChatModal(false)}
-                  className="absolute top-3 right-3 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer z-10"
-                >
-                  <X size={20} />
-                </button>
-
-                <h3 className="text-lg font-bold text-white mb-2">Chat with {self ? 'yourself' : player?.name}</h3>
-
-                {/* Messages */}
-                <div className="max-h-[200px] overflow-y-auto custom-scrollbar space-y-2 mb-3 bg-slate-900/50 rounded-xl p-3 border border-slate-800">
-                  {messages.length === 0 && <p className="text-xs text-slate-500 text-center">No messages yet</p>}
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`text-xs px-3 py-1.5 rounded-xl ${
-                        msg.senderId === user?.id
-                          ? 'bg-amber-500/20 text-amber-100 ml-auto max-w-[80%]'
-                          : 'bg-slate-800 text-slate-200 max-w-[80%]'
-                      }`}
-                    >
-                      <span className="font-bold">{msg.senderId === user?.id ? 'You' : player?.name}</span>
-                      <p className="mt-0.5">{msg.content}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-3">
-                  {/* Predefined messages */}
-                  <div className="flex flex-wrap gap-2">
-                    {QUICK_MESSAGES.map((q) => (
-                      <button
-                        key={q.id}
-                        onClick={() => sendPredefined(q.id)}
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs border border-slate-700 transition-colors"
-                      >
-                        {q.text}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Custom message input */}
-                  {customChatAccepted && (
-                    <div className="flex gap-2">
-                      <input
-                        value={customText}
-                        onChange={(e) => setCustomText(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendCustom()}
-                        placeholder="Type a message..."
-                        disabled={chatBlocked}
-                        className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 disabled:opacity-50"
-                      />
-                      <button
-                        onClick={sendCustom}
-                        disabled={chatBlocked || !customText.trim()}
-                        className="p-2 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-700 text-slate-950 rounded-lg transition-colors"
-                      >
-                        <Send size={14} />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Block controls */}
-                  <div className="flex items-center justify-between border-t border-slate-800 pt-3">
-                    <span className="text-slate-300 text-xs font-medium">Chat</span>
-                    {chatBlocked ? (
-                      <button
-                        onClick={handleUnblockChat}
-                        className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold hover:bg-emerald-500/30 transition-colors"
-                      >
-                        Unblock
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleBlockChat}
-                        className="px-3 py-1.5 bg-rose-500/20 text-rose-400 rounded-lg text-xs font-bold hover:bg-rose-500/30 transition-colors"
-                      >
-                        Block
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300 text-xs font-medium">Emoji</span>
-                    {emojiBlocked ? (
-                      <button
-                        onClick={handleUnblockEmoji}
-                        className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-bold hover:bg-emerald-500/30 transition-colors"
-                      >
-                        Unblock
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleBlockEmoji}
-                        className="px-3 py-1.5 bg-rose-500/20 text-rose-400 rounded-lg text-xs font-bold hover:bg-rose-500/30 transition-colors"
-                      >
-                        Block
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Request custom chat (only if not pending/accepted) */}
-                  {!customChatAccepted && !customChatPending && (
-                    <button
-                      onClick={handleRequestCustomChat}
-                      className="w-full px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition-colors"
-                    >
-                      Request Custom Chat
-                    </button>
-                  )}
-                  {customChatPending && (
-                    <p className="text-[11px] text-slate-400 text-center">Custom chat request pending...</p>
-                  )}
-                  {customChatAccepted && <p className="text-[11px] text-emerald-400 text-center">Custom chat active</p>}
-                </div>
               </motion.div>
             </motion.div>
           </AnimatePresence>,
