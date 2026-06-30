@@ -60,6 +60,14 @@ export class GameManager {
         })
       );
     }
+
+    socketManager.broadcast(
+      game?.gameId ?? '',
+      JSON.stringify({
+        type: 'user-left',
+        payload: { userId: user.userId },
+      })
+    );
   }
 
   removeGame(gameId: string) {
@@ -148,6 +156,64 @@ export class GameManager {
         if (game && game.result === null) {
           game.endGame('ABANDONED', user.userId === game.player1UserId ? 'BLACK_WINS' : 'WHITE_WINS');
         }
+      }
+
+      if (message.type === 'join') {
+        const roomId = message.payload?.roomId;
+        if (!roomId) return;
+        socketManager.addUser(user, roomId);
+
+        user.socket.send(
+          JSON.stringify({
+            type: 'connected',
+            payload: { userId: user.userId },
+          })
+        );
+
+        const otherUsers = socketManager.getUsersInRoom(roomId).filter((u) => u.userId !== user.userId);
+
+        user.socket.send(
+          JSON.stringify({
+            type: 'room-users',
+            payload: { users: otherUsers.map((u) => u.userId) },
+          })
+        );
+      }
+
+      if (message.type === 'offer') {
+        const { target, offer } = message.payload || {};
+        if (!target || !offer) return;
+        socketManager.sendToUser(
+          target,
+          JSON.stringify({
+            type: 'offer',
+            payload: { from: user.userId, offer },
+          })
+        );
+      }
+
+      if (message.type === 'answer') {
+        const { target, answer } = message.payload || {};
+        if (!target || !answer) return;
+        socketManager.sendToUser(
+          target,
+          JSON.stringify({
+            type: 'answer',
+            payload: { from: user.userId, answer },
+          })
+        );
+      }
+
+      if (message.type === 'ice-candidate') {
+        const { target, candidate } = message.payload || {};
+        if (!target || !candidate) return;
+        socketManager.sendToUser(
+          target,
+          JSON.stringify({
+            type: 'ice-candidate',
+            payload: { from: user.userId, candidate },
+          })
+        );
       }
 
       if (message.type === VOICE_OFFER) {

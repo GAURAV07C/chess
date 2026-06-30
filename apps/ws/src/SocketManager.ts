@@ -62,6 +62,10 @@ export class SocketManager {
     this.userRoomMappping.delete(user.userId);
   }
 
+  getUsersInRoom(roomId: string) {
+    return this.interestedSockets.get(roomId) || [];
+  }
+
   sendToUser(userId: string, message: string) {
     for (const [, roomUsers] of this.interestedSockets.entries()) {
       const user = roomUsers.find((u) => u.userId === userId);

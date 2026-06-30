@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Layout } from '../layout';
 import { motion } from 'motion/react';
 import { ClipboardCopyIcon } from 'lucide-react';

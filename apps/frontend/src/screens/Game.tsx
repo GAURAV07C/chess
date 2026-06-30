@@ -20,7 +20,7 @@ import { TurnIndicator } from '@/components/game/TurnIndicator';
 import { PlayerPanel } from '@/components/game/PlayerPanel';
 import { MatchmakingPanel } from '@/components/game/MatchmakingPanel';
 import { MatchLogPanel } from '@/components/game/MatchLogPanel';
-import { VoiceChatButton } from '@/components/game/VoiceChatButton';
+import VideoChat from '@/components/game/VideoChat';
 
 export const INIT_GAME = 'init_game';
 export const MOVE = 'move';
@@ -78,6 +78,12 @@ export const Game = () => {
     { id: string; sender: string; text: string; timestamp: number; isOwn: boolean }[]
   >([]);
   const [floatingEmoji, setFloatingEmoji] = useState<string | null>(null);
+  const opponentId =
+    gameMetadata && user
+      ? user.id === gameMetadata.blackPlayer.id
+        ? gameMetadata.whitePlayer.id
+        : gameMetadata.blackPlayer.id
+      : null;
 
   const setMoves = useChessBoardStore((state) => state.setMoves);
   const userSelectedMoveIndex = useChessBoardStore((state) => state.userSelectedMoveIndex);
@@ -92,13 +98,6 @@ export const Game = () => {
       window.location.href = '/login';
     }
   }, [user]);
-
-  const opponentId =
-    gameMetadata && user
-      ? user.id === gameMetadata.blackPlayer.id
-        ? gameMetadata.whitePlayer.id
-        : gameMetadata.blackPlayer.id
-      : null;
 
   useEffect(() => {
     if (!socket) {
@@ -312,7 +311,8 @@ export const Game = () => {
                   user={user}
                   onSendMessage={(msg) => setChatMessages((prev) => [...prev, msg])}
                 />
-                <VoiceChatButton gameId={gameId ?? ''} socket={socket} user={user} opponentId={opponentId} />
+                <VideoChat gameId={gameId ?? ''} user={user} socket={socket} opponentId={opponentId} />
+
                 <Emoji gameId={gameId ?? ''} socket={socket} floatingEmoji={floatingEmoji} user={user} />
               </div>
             </aside>

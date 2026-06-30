@@ -39,7 +39,7 @@ chess-monorepo/
 │   ├── db/            # Prisma client & schema
 │   ├── store/         # Zustand stores (user, chessBoard)
 │   ├── ui/            # Shared UI components (Button, Card, Code)
-│   ├── tailwind-config/ # Shared Tailwind + PostCSS config
+│   ├── tailwind-Config/     # Shared Tailwind + PostCSS config
 │   ├── typescript-config/ # Shared TSConfig references
 │   └── eslint-config/    # Shared ESLint rules
 ├── package.json       # Root workspace config
