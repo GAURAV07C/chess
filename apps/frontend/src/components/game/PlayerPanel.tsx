@@ -19,7 +19,15 @@ const PlayerPanel = ({ gameMetadata, player1TimeConsumed, player2TimeConsumed, s
     <div className="rounded-2xl bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 p-4 shadow-lg flex flex-row lg:flex-col items-center lg:items-stretch justify-between lg:justify-start gap-4">
       <UserAvatar gameMetadata={gameMetadata} self={self} />
       <div className="lg:mt-auto lg:pt-4 lg:border-t lg:border-slate-800/60 flex lg:justify-center">
-        {getTimer(user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+        {getTimer(
+          self
+            ? user?.id === gameMetadata?.whitePlayer?.id
+              ? player1TimeConsumed
+              : player2TimeConsumed
+            : user?.id === gameMetadata?.whitePlayer?.id
+              ? player2TimeConsumed
+              : player1TimeConsumed
+        )}
       </div>
     </div>
   );
