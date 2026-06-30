@@ -10,21 +10,28 @@ interface Message {
   isOwn: boolean;
 }
 
+interface User {
+  id: string;
+  name: string;
+}
+
 export const Chat = ({
   gameId,
   socket,
   messages,
   onSendMessage,
+  user,
 }: {
   gameId?: string;
   socket: WebSocket | null;
   messages: Message[];
   onSendMessage: (msg: Message) => void;
+  user: User | null;
 }) => {
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const currentUser = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+  const currentUser = user?.id ?? null;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,7 +44,7 @@ export const Chat = ({
   const sendMessage = () => {
     if (!input.trim() || !socket || !gameId) return;
     const messageText = input.trim();
-    const senderName = localStorage.getItem('userName') || 'Me';
+    const senderName = user?.name || 'Me';
 
     socket.send(
       JSON.stringify({

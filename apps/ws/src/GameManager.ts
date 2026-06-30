@@ -101,7 +101,7 @@ export class GameManager {
       }
 
       if (message.type === CHAT) {
-        console.log('coming from frontend', CHAT, message.payload.message);
+        // console.log('coming from frontend', CHAT, message.payload.message);
         const gameId = message.payload?.gameId;
         if (gameId) {
           socketManager.broadcast(
@@ -120,7 +120,7 @@ export class GameManager {
       }
 
       if (message.type === EMOJI) {
-        console.log('coming from frontend', EMOJI, message.payload.emoji);
+        // console.log('coming from frontend', EMOJI, message.payload.emoji);
         const gameId = message.payload?.gameId;
         if (gameId) {
           socketManager.broadcast(

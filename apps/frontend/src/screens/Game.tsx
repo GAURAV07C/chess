@@ -192,16 +192,20 @@ export const Game = () => {
           break;
 
         case CHAT:
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now().toString(),
-              sender: message.payload.senderName || 'Unknown',
-              text: message.payload.message,
-              timestamp: Date.now(),
-              isOwn: message.payload.senderId === user?.id,
-            },
-          ]);
+          const incomingMsg = {
+            id: Date.now().toString(),
+            sender: message.payload.senderName || 'Unknown',
+            text: message.payload.message,
+            timestamp: Date.now(),
+            isOwn: message.payload.senderId === user?.id,
+          };
+          setChatMessages((prev) => [...prev, incomingMsg]);
+          if (!incomingMsg.isOwn) {
+            toast.success(`${incomingMsg.sender}: ${incomingMsg.text}`, {
+              duration: 3000,
+              position: 'top-center',
+            });
+          }
           break;
 
         case EMOJI:
@@ -297,9 +301,10 @@ export const Game = () => {
                   gameId={gameId ?? ''}
                   socket={socket}
                   messages={chatMessages}
+                  user={user}
                   onSendMessage={(msg) => setChatMessages((prev) => [...prev, msg])}
                 />
-                <Emoji gameId={gameId ?? ''} socket={socket} floatingEmoji={floatingEmoji} />
+                <Emoji gameId={gameId ?? ''} socket={socket} floatingEmoji={floatingEmoji} user={user} />
               </div>
             </aside>
           )}
