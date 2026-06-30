@@ -229,6 +229,7 @@ export const Game = () => {
         })
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chess, gameId, navigate, setMoves, socket]);
 
   useEffect(() => {
