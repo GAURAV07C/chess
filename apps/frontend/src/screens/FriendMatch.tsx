@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { toast } from 'sonner';
-import { FriendMatchModal } from './friend-match/FriendMatchModal';
+import { Modal } from './friend-match/FriendMatchModal';
 import { JoiningState } from './friend-match/JoiningState';
 import { WaitingState } from './friend-match/WaitingState';
 
@@ -66,7 +66,7 @@ export const FriendMatch: React.FC = () => {
   };
 
   return (
-    <FriendMatchModal>
+    <Modal>
       {inviteId && !started ? (
         <JoiningState />
       ) : !inviteId && !waiting ? (
@@ -77,6 +77,6 @@ export const FriendMatch: React.FC = () => {
       ) : (
         <WaitingState gameId={gameId ?? ''} onCopy={copyLink} />
       )}
-    </FriendMatchModal>
+    </Modal>
   );
 };

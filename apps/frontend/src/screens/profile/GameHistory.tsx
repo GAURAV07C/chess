@@ -59,5 +59,3 @@ export const GameHistory = ({ games }: GameHistoryProps) => (
     {games.length === 0 && <EmptyHistory />}
   </div>
 );
-
-export { GameHistory };

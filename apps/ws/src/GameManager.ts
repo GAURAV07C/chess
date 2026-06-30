@@ -12,6 +12,8 @@ import {
   GAME_ADDED,
   GAME_ENDED,
   EXIT_GAME,
+  CHAT,
+  EMOJI,
 } from './messages';
 import { Game } from './Game';
 import { db } from './db';
@@ -96,6 +98,44 @@ export class GameManager {
       if (message.type === BOT_JOIN) {
         const gameId = message.payload?.gameId;
         await this.handleBotGame(user, gameId);
+      }
+
+      if (message.type === CHAT) {
+        console.log('coming from frontend', CHAT, message.payload.message);
+        const gameId = message.payload?.gameId;
+        if (gameId) {
+          socketManager.broadcast(
+            gameId,
+            JSON.stringify({
+              type: CHAT,
+              payload: {
+                gameId,
+                message: message.payload.message,
+                senderId: message.payload.senderId,
+                senderName: message.payload.senderName,
+              },
+            })
+          );
+        }
+      }
+
+      if (message.type === EMOJI) {
+        console.log('coming from frontend', EMOJI, message.payload.emoji);
+        const gameId = message.payload?.gameId;
+        if (gameId) {
+          socketManager.broadcast(
+            gameId,
+            JSON.stringify({
+              type: EMOJI,
+              payload: {
+                gameId,
+                emoji: message.payload.emoji,
+                senderId: message.payload.senderId,
+                senderName: message.payload.senderName,
+              },
+            })
+          );
+        }
       }
 
       if (message.type === OPPONENT_DISCONNECTED) {

@@ -33,6 +33,8 @@ export const USER_TIMEOUT = 'user_timeout';
 export const GAME_TIME = 'game_time';
 export const GAME_ENDED = 'game_ended';
 export const EXIT_GAME = 'exit_game';
+export const CHAT = 'CHAT';
+export const EMOJI = 'EMOJI';
 export enum Result {
   WHITE_WINS = 'WHITE_WINS',
   BLACK_WINS = 'BLACK_WINS',
@@ -71,6 +73,10 @@ export const Game = () => {
   const [player1TimeConsumed, setPlayer1TimeConsumed] = useState(0);
   const [player2TimeConsumed, setPlayer2TimeConsumed] = useState(0);
   const [gameID, setGameID] = useState('');
+  const [chatMessages, setChatMessages] = useState<
+    { id: string; sender: string; text: string; timestamp: number; isOwn: boolean }[]
+  >([]);
+  const [floatingEmoji, setFloatingEmoji] = useState<string | null>(null);
 
   const setMoves = useChessBoardStore((state) => state.setMoves);
   const userSelectedMoveIndex = useChessBoardStore((state) => state.userSelectedMoveIndex);
@@ -185,6 +191,26 @@ export const Game = () => {
           setPlayer2TimeConsumed(message.payload.player2Time);
           break;
 
+        case CHAT:
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now().toString(),
+              sender: message.payload.senderName || 'Unknown',
+              text: message.payload.message,
+              timestamp: Date.now(),
+              isOwn: message.payload.senderId === user?.id,
+            },
+          ]);
+          break;
+
+        case EMOJI:
+          if (message.payload.senderId !== user?.id) {
+            setFloatingEmoji(message.payload.emoji);
+            setTimeout(() => setFloatingEmoji(null), 3000);
+          }
+          break;
+
         default:
           if (message.payload?.message) {
             toast.error(message.payload.message);
@@ -257,19 +283,22 @@ export const Game = () => {
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full items-stretch lg:items-start lg:justify-center">
           {/* Left side — Opponent panel */}
           {started && (
-            <aside className="order-1 lg:order-1 w-full lg:w-52 xl:w-56 shrink-0">
-              <PlayerPanel
-                gameMetadata={gameMetadata}
-                player1TimeConsumed={player1TimeConsumed}
-                player2TimeConsumed={player2TimeConsumed}
-              />
-              <div>
-                <div>
-                  <Chat />
-                </div>
-                <div>
-                  <Emoji />
-                </div>
+            <aside className="order-1 lg:order-1 w-full lg:w-64 shrink-0 flex flex-col gap-3">
+              <div className="rounded-2xl bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 p-4 shadow-lg">
+                <PlayerPanel
+                  gameMetadata={gameMetadata}
+                  player1TimeConsumed={player1TimeConsumed}
+                  player2TimeConsumed={player2TimeConsumed}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Chat
+                  gameId={gameId ?? ''}
+                  socket={socket}
+                  messages={chatMessages}
+                  onSendMessage={(msg) => setChatMessages((prev) => [...prev, msg])}
+                />
+                <Emoji gameId={gameId ?? ''} socket={socket} floatingEmoji={floatingEmoji} />
               </div>
             </aside>
           )}

@@ -12,3 +12,5 @@ export const GAME_ADDED = 'game_added';
 export const GAME_TIME = 'game_time';
 export const EXIT_GAME = 'exit_game';
 export const BOT_JOIN = 'bot_join';
+export const CHAT = 'CHAT';
+export const EMOJI = 'EMOJI';
