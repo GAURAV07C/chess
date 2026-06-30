@@ -20,6 +20,7 @@ import { TurnIndicator } from '@/components/game/TurnIndicator';
 import { PlayerPanel } from '@/components/game/PlayerPanel';
 import { MatchmakingPanel } from '@/components/game/MatchmakingPanel';
 import { MatchLogPanel } from '@/components/game/MatchLogPanel';
+import { VoiceChatButton } from '@/components/game/VoiceChatButton';
 
 export const INIT_GAME = 'init_game';
 export const MOVE = 'move';
@@ -92,6 +93,13 @@ export const Game = () => {
     }
   }, [user]);
 
+  const opponentId =
+    gameMetadata && user
+      ? user.id === gameMetadata.blackPlayer.id
+        ? gameMetadata.whitePlayer.id
+        : gameMetadata.blackPlayer.id
+      : null;
+
   useEffect(() => {
     if (!socket) {
       return;
@@ -114,9 +122,9 @@ export const Game = () => {
 
           break;
         case MOVE:
-          const { move, player1TimeConsumed, player2TimeConsumed } = message.payload;
-          setPlayer1TimeConsumed(player1TimeConsumed);
-          setPlayer2TimeConsumed(player2TimeConsumed);
+          const { move, player1TimeConsumed: p1, player2TimeConsumed: p2 } = message.payload;
+          setPlayer1TimeConsumed(p1);
+          setPlayer2TimeConsumed(p2);
           if (userSelectedMoveIndexRef.current !== null) {
             setMoves((moves) => [...moves, move]);
             return;
@@ -132,7 +140,7 @@ export const Game = () => {
               chess.move({ from: move.from, to: move.to });
             }
             setMoves((moves) => [...moves, move]);
-            moveAudio.play();
+            moveAudio.play().catch(console.error);
           } catch (error) {
             console.log('Error', error);
           }
@@ -296,7 +304,7 @@ export const Game = () => {
                   player2TimeConsumed={player2TimeConsumed}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <Chat
                   gameId={gameId ?? ''}
                   socket={socket}
@@ -304,6 +312,7 @@ export const Game = () => {
                   user={user}
                   onSendMessage={(msg) => setChatMessages((prev) => [...prev, msg])}
                 />
+                <VoiceChatButton gameId={gameId ?? ''} socket={socket} user={user} opponentId={opponentId} />
                 <Emoji gameId={gameId ?? ''} socket={socket} floatingEmoji={floatingEmoji} user={user} />
               </div>
             </aside>

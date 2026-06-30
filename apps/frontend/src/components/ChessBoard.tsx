@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
 import { Chess, Color, Move, PieceSymbol, Square } from 'chess.js';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { MOVE } from '../screens/gameConstants';
 import LetterNotation from './chess-board/LetterNotation';
 import LegalMoveIndicator from './chess-board/LegalMoveIndicator';
@@ -99,8 +99,15 @@ export const ChessBoard = ({
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const boxSize = 80;
   const [gameOver, setGameOver] = useState(false);
-  const moveAudio = new Audio(MoveSound);
-  const captureAudio = new Audio(CaptureSound);
+  const moveAudioRef = useRef<HTMLAudioElement | null>(null);
+  const captureAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  if (!moveAudioRef.current) {
+    moveAudioRef.current = new Audio(MoveSound);
+  }
+  if (!captureAudioRef.current) {
+    captureAudioRef.current = new Audio(CaptureSound);
+  }
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>, squareRep: string) => {
     e.preventDefault();
@@ -290,10 +297,10 @@ export const ChessBoard = ({
                               });
                             }
                             if (moveResult) {
-                              moveAudio.play();
+                              moveAudioRef.current?.play().catch(console.error);
 
                               if (moveResult?.captured) {
-                                captureAudio.play();
+                                captureAudioRef.current?.play().catch(console.error);
                               }
                               setMoves((prev) => [...prev, moveResult]);
                               setFrom(null);

@@ -1,6 +1,6 @@
 export const getTimer = (timeConsumed: number) => {
   const GAME_TIME_MS = 10 * 60 * 1000;
-  const timeLeftMs = GAME_TIME_MS - timeConsumed;
+  const timeLeftMs = Math.max(0, GAME_TIME_MS - timeConsumed);
   const minutes = Math.floor(timeLeftMs / (1000 * 60));
   const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
 

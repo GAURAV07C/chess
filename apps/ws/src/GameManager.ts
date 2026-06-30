@@ -14,6 +14,10 @@ import {
   EXIT_GAME,
   CHAT,
   EMOJI,
+  VOICE_OFFER,
+  VOICE_ANSWER,
+  VOICE_ICE_CANDIDATE,
+  VOICE_END,
 } from './messages';
 import { Game } from './Game';
 import { db } from './db';
@@ -143,6 +147,46 @@ export class GameManager {
         const game = this.games.find((game) => game.gameId === gameId);
         if (game && game.result === null) {
           game.endGame('ABANDONED', user.userId === game.player1UserId ? 'BLACK_WINS' : 'WHITE_WINS');
+        }
+      }
+
+      if (message.type === VOICE_OFFER) {
+        const { targetUserId, gameId, sdp } = message.payload || {};
+        if (targetUserId && gameId && sdp) {
+          socketManager.sendToUser(
+            targetUserId,
+            JSON.stringify({ type: VOICE_OFFER, payload: { gameId, sdp, fromUserId: user.userId } })
+          );
+        }
+      }
+
+      if (message.type === VOICE_ANSWER) {
+        const { targetUserId, gameId, sdp } = message.payload || {};
+        if (targetUserId && gameId && sdp) {
+          socketManager.sendToUser(
+            targetUserId,
+            JSON.stringify({ type: VOICE_ANSWER, payload: { gameId, sdp, fromUserId: user.userId } })
+          );
+        }
+      }
+
+      if (message.type === VOICE_ICE_CANDIDATE) {
+        const { targetUserId, gameId, candidate } = message.payload || {};
+        if (targetUserId && gameId && candidate) {
+          socketManager.sendToUser(
+            targetUserId,
+            JSON.stringify({ type: VOICE_ICE_CANDIDATE, payload: { gameId, candidate, fromUserId: user.userId } })
+          );
+        }
+      }
+
+      if (message.type === VOICE_END) {
+        const { targetUserId, gameId } = message.payload || {};
+        if (targetUserId && gameId) {
+          socketManager.sendToUser(
+            targetUserId,
+            JSON.stringify({ type: VOICE_END, payload: { gameId, fromUserId: user.userId } })
+          );
         }
       }
 

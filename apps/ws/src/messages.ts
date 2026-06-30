@@ -14,3 +14,7 @@ export const EXIT_GAME = 'exit_game';
 export const BOT_JOIN = 'bot_join';
 export const CHAT = 'CHAT';
 export const EMOJI = 'EMOJI';
+export const VOICE_OFFER = 'voice_offer';
+export const VOICE_ANSWER = 'voice_answer';
+export const VOICE_ICE_CANDIDATE = 'voice_ice_candidate';
+export const VOICE_END = 'voice_end';
