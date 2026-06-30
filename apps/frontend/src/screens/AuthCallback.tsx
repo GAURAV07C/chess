@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@repo/store/userAtom';
 
-const AuthCallback = () => {
+export const AuthCallback = () => {
   const navigate = useNavigate();
   const setUser = useUserStore((state) => state.setUser);
   const [error, setError] = useState(false);
@@ -23,24 +23,28 @@ const AuthCallback = () => {
   }, [navigate, setUser]);
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-[#030611] flex items-center justify-center text-white">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-rose-400">Authentication Failed</h2>
-          <p className="text-slate-400 mt-2">Redirecting to login...</p>
-        </div>
-      </div>
-    );
+    return <AuthErrorState />;
   }
 
-  return (
-    <div className="min-h-screen bg-[#030611] flex items-center justify-center text-white">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-slate-400 mt-4">Completing sign in...</p>
-      </div>
-    </div>
-  );
+  return <AuthLoadingState />;
 };
+
+const AuthLoadingState = () => (
+  <div className="min-h-screen bg-[#030611] flex items-center justify-center text-white">
+    <div className="text-center">
+      <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+      <p className="text-slate-400 mt-4">Completing sign in...</p>
+    </div>
+  </div>
+);
+
+const AuthErrorState = () => (
+  <div className="min-h-screen bg-[#030611] flex items-center justify-center text-white">
+    <div className="text-center">
+      <h2 className="text-xl font-bold text-rose-400">Authentication Failed</h2>
+      <p className="text-slate-400 mt-2">Redirecting to login...</p>
+    </div>
+  </div>
+);
 
 export default AuthCallback;

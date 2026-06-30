@@ -9,10 +9,17 @@ import { useSocket } from '../hooks/useSocket';
 import { Chess, Move } from 'chess.js';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import MovesTable from '../components/MovesTable';
 import { useUser } from '@repo/store/useUser';
 import { useChessBoardStore } from '@repo/store/chessBoard';
-import { UserAvatar } from '../components/UserAvatar';
+
+import GameEndModal from '@/components/GameEndModal';
+import { Emoji } from '@/components/Emoji';
+import { Chat } from '@/components/Chat';
+import { GameBackground } from '@/components/game/GameBackground';
+import { TurnIndicator } from '@/components/game/TurnIndicator';
+import { PlayerPanel } from '@/components/game/PlayerPanel';
+import { MatchmakingPanel } from '@/components/game/MatchmakingPanel';
+import { MatchLogPanel } from '@/components/game/MatchLogPanel';
 
 export const INIT_GAME = 'init_game';
 export const MOVE = 'move';
@@ -36,18 +43,11 @@ export interface GameResult {
   by: string;
 }
 
-const GAME_TIME_MS = 10 * 60 * 1000;
-
 export interface Player {
   id: string;
   name: string;
   isGuest: boolean;
 }
-
-import GameEndModal from '@/components/GameEndModal';
-import { Waitopponent } from '@/components/ui/waitopponent';
-import { ShareGame } from '../components/ShareGame';
-import ExitGameModel from '@/components/ExitGameModel';
 
 const moveAudio = new Audio(MoveSound);
 
@@ -218,26 +218,6 @@ export const Game = () => {
     }
   }, [started, gameMetadata, user, chess]);
 
-  const getTimer = (timeConsumed: number) => {
-    const timeLeftMs = GAME_TIME_MS - timeConsumed;
-    const minutes = Math.floor(timeLeftMs / (1000 * 60));
-    const remainingSeconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
-
-    return (
-      <div
-        className={`font-mono text-xl font-bold px-4 py-2 rounded-xl border shadow-inner ${
-          timeLeftMs < 60000
-            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
-            : 'bg-slate-900/80 text-white border-slate-800'
-        }`}
-      >
-        {minutes < 10 ? '0' : ''}
-        {minutes}:{remainingSeconds < 10 ? '0' : ''}
-        {remainingSeconds}
-      </div>
-    );
-  };
-
   const handleExit = () => {
     socket?.send(
       JSON.stringify({
@@ -254,19 +234,7 @@ export const Game = () => {
   if (!socket) return <div>Connecting...</div>;
 
   return (
-    <div className="min-h-screen bg-[#030611] text-white relative overflow-hidden selection:bg-amber-500/30 selection:text-white">
-      {/* Background glowing orbs */}
-      <div className="absolute top-[-200px] left-[10%] w-[700px] h-[700px] rounded-full bg-amber-500/[0.05] blur-[120px] pointer-events-none -z-10" />
-      <div className="absolute bottom-[15%] right-[5%] w-[600px] h-[600px] rounded-full bg-sky-500/[0.04] blur-[130px] pointer-events-none -z-10" />
-      <div className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full bg-purple-500/[0.03] blur-[100px] pointer-events-none -z-10" />
-      <div
-        className="absolute inset-0 opacity-[0.2] -z-20"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(148,163,184,0.12) 1px, transparent 0)',
-          backgroundSize: '32px 32px',
-        }}
-      />
-
+    <GameBackground>
       {result && (
         <GameEndModal
           blackPlayer={gameMetadata?.blackPlayer}
@@ -279,35 +247,28 @@ export const Game = () => {
         />
       )}
 
-      {/* Turn Indicator */}
-      <div className="w-full flex justify-center pt-6 mb-2">
-        {started ? (
-          <div className="flex items-center gap-2 px-6 py-2 rounded-full bg-slate-900/80 border border-slate-800 shadow-lg backdrop-blur-md transition-all">
-            <div
-              className={`w-2.5 h-2.5 rounded-full ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`}
-            />
-            <span
-              className={`text-sm font-bold tracking-wide ${(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn() ? 'text-amber-400' : 'text-slate-400'}`}
-            >
-              {(user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w') === chess.turn()
-                ? 'Your turn'
-                : "Opponent's turn"}
-            </span>
-          </div>
-        ) : (
-          <div className="h-10"></div>
-        )}
-      </div>
+      <TurnIndicator
+        started={started}
+        turn={chess.turn()}
+        myColor={user?.id === gameMetadata?.blackPlayer?.id ? 'b' : 'w'}
+      />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 w-full">
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full items-stretch lg:items-start lg:justify-center">
           {/* Left side — Opponent panel */}
           {started && (
             <aside className="order-1 lg:order-1 w-full lg:w-52 xl:w-56 shrink-0">
-              <div className="rounded-2xl bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 p-4 shadow-lg flex flex-row lg:flex-col items-center lg:items-stretch justify-between lg:justify-start gap-4">
-                <UserAvatar gameMetadata={gameMetadata} />
-                <div className="lg:mt-auto lg:pt-4 lg:border-t lg:border-slate-800/60 flex lg:justify-center">
-                  {getTimer(user?.id === gameMetadata?.whitePlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
+              <PlayerPanel
+                gameMetadata={gameMetadata}
+                player1TimeConsumed={player1TimeConsumed}
+                player2TimeConsumed={player2TimeConsumed}
+              />
+              <div>
+                <div>
+                  <Chat />
+                </div>
+                <div>
+                  <Emoji />
                 </div>
               </div>
             </aside>
@@ -330,83 +291,30 @@ export const Game = () => {
 
           {/* Right side — Self panel + Moves log */}
           <div className="order-3 w-full lg:w-[360px] shrink-0 flex flex-col gap-4">
-            {started && (
-              <div className="rounded-2xl bg-slate-900/40 backdrop-blur-sm border border-slate-800/50 p-4 shadow-lg flex flex-row lg:flex-col items-center lg:items-stretch justify-between lg:justify-start gap-4">
-                <UserAvatar gameMetadata={gameMetadata} self />
-                <div className="lg:mt-auto lg:pt-4 lg:border-t lg:border-slate-800/60 flex lg:justify-center">
-                  {getTimer(user?.id === gameMetadata?.blackPlayer?.id ? player2TimeConsumed : player1TimeConsumed)}
-                </div>
-              </div>
-            )}
+            {started ? (
+              <PlayerPanel
+                gameMetadata={gameMetadata}
+                player1TimeConsumed={player1TimeConsumed}
+                player2TimeConsumed={player2TimeConsumed}
+                self
+              />
+            ) : null}
 
-            <div className="rounded-2xl bg-slate-950/60 border border-slate-800 shadow-xl backdrop-blur-md overflow-hidden flex flex-col h-[400px] lg:h-[calc(100vh-140px)] min-h-[400px]">
-              {!started ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-8">
-                  {added ? (
-                    <div className="flex flex-col items-center space-y-8 w-full">
-                      <Waitopponent />
-                      <div className="w-full pt-4 border-t border-slate-800">
-                        <ShareGame gameId={gameID} />
-                      </div>
-                    </div>
-                  ) : (
-                    gameId === 'random' && (
-                      <div className="flex flex-col items-center gap-6 w-full text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 mb-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-amber-500"
-                          >
-                            <path d="M12 20v-6M6 20V10M18 20V4" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h2 className="text-2xl font-bold text-white font-serif mb-2">Quick Match</h2>
-                          <p className="text-slate-400 text-sm max-w-[250px]">
-                            Get matched instantly with a player of your skill level from around the world.
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            socket.send(
-                              JSON.stringify({
-                                type: INIT_GAME,
-                              })
-                            );
-                          }}
-                          className="mt-4 px-8 py-4 text-base bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 w-full hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                          Find Opponent
-                        </button>
-                      </div>
-                    )
-                  )}
-                </div>
-              ) : (
-                <>
-                  <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center shrink-0">
-                    <h3 className="font-bold text-slate-200 tracking-wide">Match Log</h3>
-                    <ExitGameModel onClick={() => handleExit()} />
-                  </div>
-                  <div className="flex-1 overflow-hidden relative">
-                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-2">
-                      <MovesTable setResult={setResult} />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+            {!started ? (
+              <MatchmakingPanel
+                added={added}
+                gameId={gameID}
+                isRandom={gameId === 'random'}
+                onStartMatch={() => {
+                  socket.send(JSON.stringify({ type: INIT_GAME }));
+                }}
+              />
+            ) : (
+              <MatchLogPanel setResult={setResult} onExit={handleExit} />
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </GameBackground>
   );
 };

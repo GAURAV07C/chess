@@ -2,28 +2,25 @@ import { useState } from 'react';
 import { useUserStore } from '@repo/store/userAtom';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { LoginHeader } from './login/LoginHeader';
+import { SocialLoginButton } from './login/SocialLoginButton';
+import { GuestLoginForm } from './login/GuestLoginForm';
+import { Divider } from './login/Divider';
 
 const BACKEND_URL = import.meta.env.VITE_APP_BACKEND_URL ?? 'http://localhost:3000';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const setUser = useUserStore((state: { setUser: any }) => state.setUser);
-  const [name, setName] = useState('');
+  const setUser = useUserStore((state) => state.setUser);
   const [isGuest, setIsGuest] = useState(false);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  const google = () => {
-    window.open(`${BACKEND_URL}/auth/google`, '_self');
-  };
+  const google = () => window.open(`${BACKEND_URL}/auth/google`, '_self');
+  const github = () => window.open(`${BACKEND_URL}/auth/github`, '_self');
 
-  const github = () => {
-    window.open(`${BACKEND_URL}/auth/github`, '_self');
-  };
-
-  const loginAsGuest = async () => {
+  const loginAsGuest = async (name: string) => {
     if (!name.trim()) return;
     const response = await fetch(`${BACKEND_URL}/auth/guest`, {
       method: 'POST',
@@ -45,24 +42,7 @@ const Login = () => {
       <div className="absolute bottom-[15%] right-[5%] w-[600px] h-[600px] rounded-full bg-[#1e293b]/15 blur-[130px] pointer-events-none -z-10" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.004)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.004)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none -z-20" />
 
-      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-[#030611]/85 border-b border-slate-900/60 px-6 md:px-14 py-4 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-slate-950 font-serif font-black shadow-lg shadow-amber-500/10 text-xl">
-              ♜
-            </span>
-            <span className="font-serif text-xl font-extrabold text-white tracking-tight">
-              Chess<span className="text-amber-500 font-sans font-medium">Platform</span>
-            </span>
-          </div>
-          <a
-            href="/"
-            className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white border border-slate-800 px-3 py-1.5 rounded-xl transition-all font-semibold hover:bg-slate-900 cursor-pointer"
-          >
-            ← Back to Home
-          </a>
-        </div>
-      </header>
+      <LoginHeader />
 
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <motion.div
@@ -90,12 +70,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={google}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 text-white text-sm font-bold transition-all cursor-pointer"
-              >
+              <SocialLoginButton onClick={google}>
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -115,14 +90,9 @@ const Login = () => {
                   />
                 </svg>
                 Continue with Google
-              </motion.button>
+              </SocialLoginButton>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={github}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 text-white text-sm font-bold transition-all cursor-pointer"
-              >
+              <SocialLoginButton onClick={github}>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path
                     fillRule="evenodd"
@@ -131,45 +101,12 @@ const Login = () => {
                   />
                 </svg>
                 Continue with GitHub
-              </motion.button>
+              </SocialLoginButton>
             </div>
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-900/80" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-[#0b0f1f] text-slate-500 font-mono">OR</span>
-              </div>
-            </div>
+            <Divider title="OR" />
 
-            {/* Guest Mode */}
-            <AnimatePresence>
-              {isGuest && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4"
-                >
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Choose a username"
-                    className="w-full bg-slate-950/60 border border-slate-900 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 text-white pl-4 pr-4 py-3 rounded-xl text-sm placeholder:text-slate-600 focus:outline-none transition-all"
-                  />
-                  <button
-                    onClick={loginAsGuest}
-                    disabled={!name.trim()}
-                    className="w-full bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-slate-950 text-sm font-black py-3 rounded-xl transition-all shadow-lg shadow-amber-500/15 hover:shadow-amber-500/25 tracking-wide cursor-pointer"
-                  >
-                    Enter Arena
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <AnimatePresence>{isGuest && <GuestLoginForm onGuestSubmit={loginAsGuest} />}</AnimatePresence>
 
             <button
               onClick={() => setIsGuest((s) => !s)}

@@ -1,14 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
-import { ClipboardCopyIcon } from 'lucide-react';
 import { toast } from 'sonner';
-
-const Modal = ({ children }: { children: React.ReactNode }) => (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50">
-    <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-6 shadow-xl max-w-md w-full">{children}</div>
-  </div>
-);
+import { FriendMatchModal } from './friend-match/FriendMatchModal';
+import { JoiningState } from './friend-match/JoiningState';
+import { WaitingState } from './friend-match/WaitingState';
 
 export const FriendMatch: React.FC = () => {
   const { inviteId } = useParams<{ inviteId?: string }>();
@@ -70,37 +66,17 @@ export const FriendMatch: React.FC = () => {
   };
 
   return (
-    <Modal>
+    <FriendMatchModal>
       {inviteId && !started ? (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Joining friend match...</h2>
-          <p className="text-slate-300">Waiting for opponent to start the game.</p>
-        </div>
+        <JoiningState />
       ) : !inviteId && !waiting ? (
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Create a Friend Match</h2>
           <p className="text-slate-300">Preparing your game room...</p>
         </div>
       ) : (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Create a Friend Match</h2>
-          <p className="text-slate-300 mb-4">
-            Share the link below with a friend. When they open it, the game will start.
-          </p>
-          {waiting && (
-            <div className="flex items-center justify-center space-x-2">
-              <input
-                readOnly
-                value={`${window.location.origin}/game/friend/${gameId}`}
-                className="bg-slate-800 border border-slate-700 text-slate-200 px-2 py-1 rounded w-full"
-              />
-              <button onClick={copyLink} className="p-2 bg-amber-500 rounded hover:bg-amber-600">
-                <ClipboardCopyIcon size={20} className="text-white" />
-              </button>
-            </div>
-          )}
-        </div>
+        <WaitingState gameId={gameId ?? ''} onCopy={copyLink} />
       )}
-    </Modal>
+    </FriendMatchModal>
   );
 };
