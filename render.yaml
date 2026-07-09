@@ -56,11 +56,13 @@ services:
       - key: AUTH_REDIRECT_URL
         value: ${ALLOWED_HOSTS}/game/random
 
-  - type: static
+  - type: web
     name: frontend
     buildCommand: yarn install && cd apps/frontend && yarn build
-    staticPublishPath: apps/frontend/dist
+    startCommand: cd apps/frontend && npx serve dist -l $PORT -s
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: VITE_APP_BACKEND_URL
         fromService:
           name: backend
