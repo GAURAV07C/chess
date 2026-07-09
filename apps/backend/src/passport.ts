@@ -25,7 +25,11 @@ export function initPassport() {
 
   passport.use(
     new GoogleStrategy(
-      { clientID: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, callbackURL: '/auth/google/callback' },
+      {
+        clientID: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
+        callbackURL: (req: any) => `${req.protocol}://${req.get('host')}/auth/google/callback`,
+      },
       async function (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) {
         const email = profile.emails?.[0]?.value;
         if (!email) return done(new Error('Google profile has no email'));
@@ -48,7 +52,11 @@ export function initPassport() {
 
   passport.use(
     new GithubStrategy(
-      { clientID: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET, callbackURL: '/auth/github/callback' },
+      {
+        clientID: GITHUB_CLIENT_ID,
+        clientSecret: GITHUB_CLIENT_SECRET,
+        callbackURL: (req: any) => `${req.protocol}://${req.get('host')}/auth/github/callback`,
+      },
       async function (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) {
         const res = await fetch('https://api.github.com/user/emails', {
           headers: { Authorization: `token ${accessToken}` },
