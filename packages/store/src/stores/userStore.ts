@@ -14,6 +14,7 @@ interface UserState {
   setUser: (user: User | null) => void;
   setHydrated: (hydrated: boolean) => void;
   refreshUser: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>()((set) => ({
@@ -21,6 +22,18 @@ export const useUserStore = create<UserState>()((set) => ({
   hydrated: false,
   setUser: (user: User | null) => set({ user }),
   setHydrated: (hydrated: boolean) => set({ hydrated }),
+  logout: async () => {
+    try {
+      await fetch(`${BACKEND_URL}/auth/logout`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      set({ user: null, hydrated: false });
+    }
+  },
   refreshUser: async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/auth/refresh`, {

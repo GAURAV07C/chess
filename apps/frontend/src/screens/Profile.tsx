@@ -96,10 +96,7 @@ export const Profile = () => {
   }, [profile]);
 
   const handleLogout = async () => {
-    await fetch(`${BACKEND_URL}/auth/logout`, {
-      method: 'GET',
-      credentials: 'include',
-    });
+    await useUserStore.getState().logout();
     window.location.href = '/login';
   };
 

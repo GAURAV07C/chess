@@ -98,8 +98,13 @@ router.get('/login/failed', (req: Request, res: Response) => {
 });
 
 router.get('/logout', (req: Request, res: Response) => {
-  res.clearCookie('guest');
-  res.clearCookie('jwt');
+  const cookieClearOptions = {
+    path: '/',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  };
+  res.clearCookie('guest', cookieClearOptions);
+  res.clearCookie('jwt', cookieClearOptions);
   req.logout((err) => {
     if (err) {
       console.error('Error logging out:', err);
