@@ -17,12 +17,13 @@ app.set('trust proxy', 1);
 dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(
   session({
     secret: process.env.COOKIE_SECRET || 'keyboard cat',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production', maxAge: COOKIE_MAX_AGE },
+    cookie: { secure: isProduction, maxAge: COOKIE_MAX_AGE, sameSite: isProduction ? 'none' : 'lax' },
   })
 );
 
