@@ -5,7 +5,6 @@ services:
     plan: free
     buildCommand: yarn install && cd apps/backend && yarn build
     startCommand: cd apps/backend && yarn start
-    preDeployCommand: yarn workspace @repo/db prisma migrate deploy
     envVars:
       - key: NODE_ENV
         value: production
@@ -39,14 +38,6 @@ services:
         value: production
       - key: DATABASE_URL
         value: ${DATABASE_URL}
-      - key: JWT_SECRET
-        fromService:
-          name: backend
-          property: env.JWT_SECRET
-      - key: COOKIE_SECRET
-        fromService:
-          name: backend
-          property: env.COOKIE_SECRET
       - key: GOOGLE_CLIENT_ID
         value: ${GOOGLE_CLIENT_ID}
       - key: GOOGLE_CLIENT_SECRET
@@ -55,19 +46,21 @@ services:
         value: ${ALLOWED_HOSTS}
       - key: AUTH_REDIRECT_URL
         value: ${ALLOWED_HOSTS}/game/random
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
 
   - type: web
     name: frontend
+    env: node
+    plan: free
     buildCommand: yarn install && cd apps/frontend && yarn build
     startCommand: cd apps/frontend && npx serve dist -l $PORT -s
     envVars:
       - key: NODE_ENV
         value: production
       - key: VITE_APP_BACKEND_URL
-        fromService:
-          name: backend
-          property: url
+        value: ${VITE_APP_BACKEND_URL}
       - key: VITE_APP_WS_URL
-        fromService:
-          name: ws
-          property: url
+        value: ${VITE_APP_WS_URL}
