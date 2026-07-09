@@ -8,6 +8,15 @@ const router = Router();
 
 const CLIENT_URL = process.env.AUTH_REDIRECT_URL ?? 'http://localhost:5173/auth/callback';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+const isProduction = process.env.NODE_ENV === 'production';
+
+const cookieSettings = {
+  maxAge: COOKIE_MAX_AGE,
+  httpOnly: false,
+  sameSite: 'lax' as const,
+  secure: isProduction,
+  path: '/',
+};
 
 interface userJwtClaims {
   userId: string;
@@ -45,12 +54,7 @@ router.post('/guest', async (req: Request, res: Response) => {
       isGuest: true,
     };
 
-    res.cookie('guest', token, {
-      maxAge: COOKIE_MAX_AGE,
-      httpOnly: false,
-      sameSite: 'lax',
-      path: '/',
-    });
+    res.cookie('guest', token, cookieSettings);
     res.json(UserDetails);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create guest account' });
@@ -82,7 +86,7 @@ router.get('/refresh', async (req: Request, res: Response) => {
       token: token,
       isGuest: true,
     };
-    res.cookie('guest', token, { maxAge: COOKIE_MAX_AGE });
+    res.cookie('guest', token, cookieSettings);
     res.json(User);
   } else {
     res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -118,12 +122,7 @@ router.get(
       if (!user?.id) return res.redirect('/login/failed');
 
       const token = jwt.sign({ userId: user.id, name: user.name ?? user.username ?? '' }, JWT_SECRET);
-      res.cookie('guest', token, {
-        maxAge: COOKIE_MAX_AGE,
-        httpOnly: false,
-        sameSite: 'lax',
-        path: '/',
-      });
+      res.cookie('guest', token, cookieSettings);
 
       const redirectUrl = new URL(CLIENT_URL);
       redirectUrl.searchParams.set('token', token);
@@ -150,12 +149,7 @@ router.get(
       if (!user?.id) return res.redirect('/login/failed');
 
       const token = jwt.sign({ userId: user.id, name: user.name ?? user.username ?? '' }, JWT_SECRET);
-      res.cookie('guest', token, {
-        maxAge: COOKIE_MAX_AGE,
-        httpOnly: false,
-        sameSite: 'lax',
-        path: '/',
-      });
+      res.cookie('guest', token, cookieSettings);
 
       const redirectUrl = new URL(CLIENT_URL);
       redirectUrl.searchParams.set('token', token);
