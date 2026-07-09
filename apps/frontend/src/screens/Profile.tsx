@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useUserStore } from '@repo/store/userAtom';
 import { useThemeContext } from '@/hooks/useThemes';
+import { THEME } from '@/context/themeContext';
 import { THEMES_DATA } from '@/constants/themes';
 import { ProfileHeader } from './profile/ProfileHeader';
 import { ProfileStats } from './profile/ProfileStats';
@@ -152,7 +153,11 @@ export const Profile = () => {
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <ThemeSection />
-          <ThemeSelector themes={THEMES_DATA} activeTheme={activeTheme} onSelectTheme={updateTheme} />
+          <ThemeSelector
+            themes={THEMES_DATA}
+            activeTheme={activeTheme}
+            onSelectTheme={(name) => updateTheme(name as THEME)}
+          />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">

@@ -38,7 +38,7 @@ type UserProfile = {
   lastLogin?: string;
 };
 
-type ProfileResponse = {
+export type ProfileResponse = {
   user: UserProfile;
   stats: ProfileStats;
   currentWinStreak: number;
