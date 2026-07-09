@@ -1,8 +1,4 @@
 services:
-  - type: pganalyze
-    name: chess-db
-    plan: free
-
   - type: web
     name: backend
     env: node
@@ -14,9 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: chess-db
-          property: connectionString
+        value: ${DATABASE_URL}
       - key: GOOGLE_CLIENT_ID
         value: ${GOOGLE_CLIENT_ID}
       - key: GOOGLE_CLIENT_SECRET
@@ -44,9 +38,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: chess-db
-          property: connectionString
+        value: ${DATABASE_URL}
       - key: JWT_SECRET
         fromService:
           name: backend
