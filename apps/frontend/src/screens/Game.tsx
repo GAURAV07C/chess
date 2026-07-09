@@ -2,7 +2,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useState } from 'react';
-import MoveSound from '/move.wav';
+import MoveSound from '../assets/move.wav';
 import { ChessBoard } from '../components/ChessBoard';
 import { isPromoting } from '@/utils/chessHelpers';
 import { useSocket } from '../hooks/useSocket';

@@ -9,8 +9,8 @@ import ChessSquare from './chess-board/ChessSquare';
 import NumberNotation from './chess-board/NumberNotation';
 import { drawArrow } from '../utils/canvas';
 import Confetti from 'react-confetti';
-import MoveSound from '/move.wav';
-import CaptureSound from '/capture.wav';
+import MoveSound from '../assets/move.wav';
+import CaptureSound from '../assets/capture.wav';
 
 import { useChessBoardStore } from '@repo/store/chessBoard';
 import { useThemeContext } from '@/hooks/useThemes';

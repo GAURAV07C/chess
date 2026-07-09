@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import WhiteKing from '../../public/wk.png';
-import BlackKing from '../../public/bk.png';
+import WhiteKing from '../assets/wk.png';
+import BlackKing from '../assets/bk.png';
 import { GameResult, Result } from '@/screens/Game';
 
 interface ModalProps {
