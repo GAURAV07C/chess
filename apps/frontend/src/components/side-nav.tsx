@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { type LucideIcon } from 'lucide-react';
 import { useUser } from '@repo/store/useUser';
+import { useHydratedUser } from '@/hooks/useHydratedUser';
 
 export interface NavItem {
   title: string;
@@ -25,6 +26,7 @@ interface SideNavProps {
 
 export function SideNav({ items, setOpen, className }: SideNavProps) {
   const user = useUser();
+  const { mounted } = useHydratedUser();
   const location = useLocation();
   const { isOpen } = useSidebar();
   const [openItem, setOpenItem] = useState('');
@@ -39,9 +41,16 @@ export function SideNav({ items, setOpen, className }: SideNavProps) {
     }
   }, [isOpen, lastOpenItem, openItem]);
 
+  const shouldShowItem = (item: NavItem) => {
+    if (!mounted) return true;
+    if (item.title === 'Login') return !user;
+    if (item.title === 'Logout') return !!user;
+    return true;
+  };
+
   return (
     <nav className="dark">
-      {items.map((item) =>
+      {items.filter(shouldShowItem).map((item) =>
         item.isChidren ? (
           <Accordion
             type="single"
@@ -91,10 +100,7 @@ export function SideNav({ items, setOpen, className }: SideNavProps) {
             </AccordionItem>
           </Accordion>
         ) : (
-          <div
-            key={item.title}
-            hidden={(user && item.title == 'Login') || (!user && item.title == 'Logout') ? true : false}
-          >
+          <div key={item.title}>
             {' '}
             <a
               href={item.href}
