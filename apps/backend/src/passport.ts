@@ -18,6 +18,10 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || 'your_google_cl
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || 'your_github_client_id';
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || 'your_github_client_secret';
 
+const HOST = process.env.RENDER_EXTERNAL_HOSTNAME || process.env.BACKEND_HOST || 'localhost:3000';
+const PROTOCOL = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+const BACKEND_CALLBACK_BASE = `${PROTOCOL}://${HOST}`;
+
 export function initPassport() {
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
     throw new Error('Missing environment variables for authentication providers');
@@ -28,7 +32,7 @@ export function initPassport() {
       {
         clientID: GOOGLE_CLIENT_ID,
         clientSecret: GOOGLE_CLIENT_SECRET,
-        callbackURL: (req: any) => `${req.protocol}://${req.get('host')}/auth/google/callback`,
+        callbackURL: `${BACKEND_CALLBACK_BASE}/auth/google/callback`,
       },
       async function (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) {
         const email = profile.emails?.[0]?.value;
@@ -55,7 +59,7 @@ export function initPassport() {
       {
         clientID: GITHUB_CLIENT_ID,
         clientSecret: GITHUB_CLIENT_SECRET,
-        callbackURL: (req: any) => `${req.protocol}://${req.get('host')}/auth/github/callback`,
+        callbackURL: `${BACKEND_CALLBACK_BASE}/auth/github/callback`,
       },
       async function (accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) {
         const res = await fetch('https://api.github.com/user/emails', {
