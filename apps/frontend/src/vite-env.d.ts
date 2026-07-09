@@ -1,5 +1,16 @@
+/// <reference types="vite/client" />
+
 declare module 'react-dom' {
   export * from 'react-dom';
+}
+
+declare module 'react-dom/client' {
+  export * from 'react-dom/client';
+}
+
+declare module 'uuid' {
+  const uuid: unknown;
+  export default uuid;
 }
 declare module 'react-dom/client' {
   export * from 'react-dom/client';
